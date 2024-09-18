@@ -1,0 +1,29 @@
+{
+  "name": "bongbong",
+  "author": {
+    "name": "platane"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@react-three/drei": "9.112.0",
+    "@react-three/fiber": "8.17.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "three": "0.168.0",
+    "zustand": "4.5.5",
+    "@liveblocks/client": "2.7.1"
+  },
+  "devDependencies": {
+    "vite": "5.4.5",
+    "@biomejs/biome": "1.9.1",
+    "@types/react": "18.3.5",
+    "@types/react-dom": "18.3.0",
+    "@types/three": "0.168.0",
+    "typescript": "5.6.2"
+  },
+  "scripts": {
+    "type": "tsc --noEmit",
+    "dev": "vite"
+  }
+}

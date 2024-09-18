@@ -1,0 +1,23 @@
+name: main
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun type
+      - run: bun lint
+      - run: bun jest
+      - run: bunx vite build
+      - run: cp doc/* ./dist/
+      # - run: bunx surge ./dist yAR-htzee-platane.surge.sh
+      #   env:
+      #     SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+      #     SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
