@@ -1,6 +1,6 @@
-import { createClient, Room } from "@liveblocks/client";
-import { buildRoute, parseRoute } from "./routes";
+import { Room, createClient } from "@liveblocks/client";
 import deepEqual from "fast-deep-equal";
+import { buildRoute, parseRoute } from "./routes";
 
 export type State<Game = any> =
   | { type: "404"; pathname: string; search: string; hash: string }
@@ -46,7 +46,7 @@ const createSubscribable = () => {
 
 const createSubscribeToChange = <State>(
   getState: () => State,
-  subscribe: (h: () => void) => () => void
+  subscribe: (h: () => void) => () => void,
 ) => {
   const cleanUps = new Set<(() => void) | undefined>();
   const subscribeToChange = <S>(
@@ -55,7 +55,7 @@ const createSubscribeToChange = <State>(
     {
       equalsFn = (a, b) => a === b,
       initialTrigger = true,
-    }: { equalsFn?: (a: S, b: S) => boolean; initialTrigger?: boolean } = {}
+    }: { equalsFn?: (a: S, b: S) => boolean; initialTrigger?: boolean } = {},
   ) => {
     let previousValue = selector(getState());
 
@@ -155,7 +155,7 @@ export const createState = () => {
     },
     (url) => {
       history.replaceState(history.state, "", url);
-    }
+    },
   );
 
   // handle live messaging
@@ -207,7 +207,7 @@ export const createState = () => {
         room.subscribe("others", updateOthers);
 
         return leave;
-      }
+      },
     );
 
     // set user data
@@ -221,7 +221,7 @@ export const createState = () => {
         if (data && room) room.updatePresence(data);
       },
 
-      { equalsFn: deepEqual }
+      { equalsFn: deepEqual },
     );
   }
 

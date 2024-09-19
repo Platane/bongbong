@@ -5,7 +5,7 @@ export const parseRoute = (url: string) => {
   const { pathname } = new URL(url, "http://example.com");
 
   const [, r] = ("start_of_url_token" + pathname).split(
-    "start_of_url_token" + BASE_URL
+    "start_of_url_token" + BASE_URL,
   );
 
   let m: any[] | null;
