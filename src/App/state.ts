@@ -1,28 +1,39 @@
 import { Room, createClient } from "@liveblocks/client";
 import deepEqual from "fast-deep-equal";
 import { buildRoute, parseRoute } from "./routes";
+import { createInitialGame, Game, isInput, registerInput } from "./game";
+
+type Remote = { remoteId: string; hand: "right" | "left" };
 
 export type State<Game = any> =
   | { type: "404"; pathname: string; search: string; hash: string }
   | { type: "home" }
-  | {
-      type: "lobby";
-      roomId: string;
-      connectedRemotes: { remoteId: string; hand: "right" | "left" }[];
-    }
-  | {
-      type: "remote";
-      roomId: string;
-      remoteId: string;
-      hand: "right" | "left";
-      connectedRemotes: { remoteId: string; hand: "right" | "left" }[];
-    }
-  | {
-      type: "game";
-      roomId: string;
-      game: Game;
-      connectedRemotes: { remoteId: string; hand: "right" | "left" }[];
-    };
+  | ((
+      | {
+          type: "viewer";
+        }
+      | {
+          type: "remote";
+          remoteId: string;
+          hand: "right" | "left";
+        }
+    ) &
+      (
+        | {
+            roomId: string;
+            connectionStatus: "ready";
+            game: Game | undefined;
+            connectedRemotes: Remote[];
+            leader: boolean;
+          }
+        | {
+            roomId: string;
+            connectionStatus: "connecting";
+            game?: undefined;
+            connectedRemotes?: undefined;
+            leader?: undefined;
+          }
+      ));
 
 const LIVEBLOCKS_API_KEY =
   "pk_dev_zC81tVVIuXr9D1AHq0fwfhZON1PCYj4UjXi9f6buP9ddTErRWvPrDwyJzB3TEQDJ";
@@ -46,7 +57,7 @@ const createSubscribable = () => {
 
 const createSubscribeToChange = <State>(
   getState: () => State,
-  subscribe: (h: () => void) => () => void,
+  subscribe: (h: () => void) => () => void
 ) => {
   const cleanUps = new Set<(() => void) | undefined>();
   const subscribeToChange = <S>(
@@ -55,7 +66,7 @@ const createSubscribeToChange = <State>(
     {
       equalsFn = (a, b) => a === b,
       initialTrigger = true,
-    }: { equalsFn?: (a: S, b: S) => boolean; initialTrigger?: boolean } = {},
+    }: { equalsFn?: (a: S, b: S) => boolean; initialTrigger?: boolean } = {}
   ) => {
     let previousValue = selector(getState());
 
@@ -86,7 +97,7 @@ const createSubscribeToChange = <State>(
 };
 
 export const createState = () => {
-  let state = { type: "home" } as State;
+  let state = { type: "home" } as State<Game>;
   const getState = () => state;
 
   const {
@@ -95,7 +106,7 @@ export const createState = () => {
     dispose: disposeSubscribable,
   } = createSubscribable();
 
-  const setState = (s: State) => {
+  const setState = (s: typeof state) => {
     state = s;
     broadcast();
   };
@@ -109,13 +120,12 @@ export const createState = () => {
   {
     const route = parseRoute(window.location.href);
     if (route.name === "new-remote") {
-      const remoteId = generateRandomId();
       setState({
         type: "remote",
-        remoteId,
+        remoteId: generateRandomId(),
         hand: "left",
         roomId: route.roomId,
-        connectedRemotes: [],
+        connectionStatus: "connecting",
       });
     }
 
@@ -125,15 +135,15 @@ export const createState = () => {
         hand: "left",
         remoteId: route.remoteId,
         roomId: route.roomId,
-        connectedRemotes: [],
+        connectionStatus: "connecting",
       });
     }
 
     if (route.name === "lobby") {
       setState({
-        type: "lobby",
+        type: "viewer",
         roomId: route.roomId,
-        connectedRemotes: [],
+        connectionStatus: "connecting",
       });
     }
   }
@@ -142,8 +152,7 @@ export const createState = () => {
   subscribeToChange(
     (state) => {
       switch (state.type) {
-        case "lobby":
-        case "game":
+        case "viewer":
           return buildRoute({ ...state, name: "lobby" });
         case "remote":
           return buildRoute({ ...state, name: "remote" });
@@ -155,7 +164,7 @@ export const createState = () => {
     },
     (url) => {
       history.replaceState(history.state, "", url);
-    },
+    }
   );
 
   // handle live messaging
@@ -164,7 +173,9 @@ export const createState = () => {
     // enter room
     subscribeToChange(
       (state) =>
-        state.type === "lobby" || state.type === "remote" ? state.roomId : null,
+        state.type === "viewer" || state.type === "remote"
+          ? state.roomId
+          : null,
 
       (roomId) => {
         if (room?.id === roomId || !roomId) return;
@@ -174,14 +185,22 @@ export const createState = () => {
         room = room_;
 
         // listen to game events
-        room.subscribe("event", (o) => {
-          console.log("event", o);
+        room.subscribe("event", ({ event }: any) => {
+          if (
+            event.type === "remote-input" &&
+            isInput(event) &&
+            (state.type === "viewer" || state.type === "remote") &&
+            state.game
+          )
+            setState({ ...state, game: registerInput(state.game, event) });
         });
 
         // update connected remote from other presences
         const updateOthers = () => {
-          const others = room?.getOthers();
-          if (!others) return;
+          if (!room) return;
+          if (state.type !== "viewer" && state.type !== "remote") return;
+
+          const others = room.getOthers();
 
           const connectedRemotes = others.map((o) => o.presence) as {
             remoteId: string;
@@ -194,20 +213,29 @@ export const createState = () => {
               hand: state.hand,
             });
 
-          if (
-            (state.type === "lobby" ||
-              state.type === "remote" ||
-              state.type === "game") &&
-            !deepEqual(state.type, connectedRemotes)
-          )
-            setState({ ...state, connectedRemotes });
+          if (!deepEqual(state.connectedRemotes, connectedRemotes))
+            setState({
+              ...state,
+              connectionStatus: "ready",
+              connectedRemotes,
+              leader: false,
+            });
+
+          //
+          const selfId = room.getSelf()?.connectionId;
+          if (selfId && others.every((o) => o.connectionId < selfId)) {
+            setState({ ...state, leader: true } as any);
+          }
         };
 
-        room.waitUntilPresenceReady().then(updateOthers);
         room.subscribe("others", updateOthers);
 
+        room.subscribe("status", () => {
+          console.log("status", room?.getStatus());
+        });
+
         return leave;
-      },
+      }
     );
 
     // set user data
@@ -221,17 +249,52 @@ export const createState = () => {
         if (data && room) room.updatePresence(data);
       },
 
-      { equalsFn: deepEqual },
+      { equalsFn: deepEqual }
     );
   }
 
+  // functions
+
   const createRoom = () => {
     const roomId = generateRandomId();
+    if (state.type !== "home") return;
     setState({
-      type: "lobby",
+      type: "viewer",
       roomId,
-      connectedRemotes: [],
+      connectionStatus: "connecting",
     });
+  };
+
+  const startGame = (track: string, goals: Game["goals"]) => {
+    if (state.type !== "viewer") return;
+    setState({
+      ...state,
+      game: createInitialGame(track, goals, Date.now()),
+    });
+  };
+
+  const inputRemote = (kind: "ring" | "skin") => {
+    if (state.type !== "remote" || !state.game) return;
+
+    const timestamp = Date.now() - state.game.trackStartedDate;
+    const hand = state.connectedRemotes.find(
+      (r) => r.remoteId === state.remoteId
+    )?.hand;
+
+    if (!hand) return;
+
+    const input = { kind, timestamp, hand };
+
+    const game = registerInput(state.game, input);
+    setState({ ...state, game });
+
+    room?.broadcastEvent({
+      type: "remote-input",
+      ...input,
+      remoteId: state.remoteId,
+    });
+
+    room?.getStorage().then((storage) => storage.root.set);
   };
 
   const dispose = () => {
@@ -239,7 +302,16 @@ export const createState = () => {
     disposeSubscribeToChange();
   };
 
-  return { getState, subscribe, createRoom, dispose };
+  return {
+    getState,
+    subscribe,
+    dispose,
+
+    //
+    createRoom,
+    startGame,
+    inputRemote,
+  };
 };
 
 const generateRandomId = () => Math.random().toString(36).slice(2);

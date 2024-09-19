@@ -6,7 +6,8 @@
     "target": "es2020",
     "lib": ["dom", "es2023"],
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules"]
 }
