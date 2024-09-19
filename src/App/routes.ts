@@ -11,7 +11,7 @@ export const parseRoute = (url: string) => {
   let m: any[] | null;
 
   if ((m = r.match(/^room\/(\w+)\/remote\/(\w+)/))) {
-    return { name: "lobby", roomId: m[1], remoteId: m[2] } as const;
+    return { name: "remote", roomId: m[1], remoteId: m[2] } as const;
   }
 
   if ((m = r.match(/^room\/(\w+)\/remote\/join/))) {
@@ -24,7 +24,12 @@ export const parseRoute = (url: string) => {
 
   if (r === "") return { name: "home" } as const;
 
-  return { name: "404", url: r } as const;
+  return {
+    name: "404",
+    pathname,
+    search: "" as string,
+    hash: "" as string,
+  } as const;
 };
 
 export type Route = ReturnType<typeof parseRoute>;
@@ -37,11 +42,11 @@ export const buildRoute = (route: Route) => {
       case "new-remote":
         return `room/${route.roomId}/remote/join`;
       case "lobby":
-        if (route.remoteId)
-          return `room/${route.roomId}/remote/${route.remoteId}`;
         return `room/${route.roomId}`;
+      case "remote":
+        return `room/${route.roomId}/remote/${route.remoteId}`;
       case "404":
-        return route.url;
+        return route.pathname;
     }
   })();
 
