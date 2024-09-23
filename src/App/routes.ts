@@ -5,17 +5,17 @@ export const parseRoute = (url: string) => {
   const { pathname } = new URL(url, "http://example.com");
 
   const [, r] = ("start_of_url_token" + pathname).split(
-    "start_of_url_token" + BASE_URL,
+    "start_of_url_token" + BASE_URL
   );
 
   let m: any[] | null;
 
-  if ((m = r.match(/^room\/(\w+)\/remote\/(\w+)/))) {
-    return { name: "remote", roomId: m[1], remoteId: m[2] } as const;
-  }
-
   if ((m = r.match(/^room\/(\w+)\/remote\/join/))) {
     return { name: "new-remote", roomId: m[1] } as const;
+  }
+
+  if ((m = r.match(/^room\/(\w+)\/remote\/(\w+)/))) {
+    return { name: "remote", roomId: m[1], remoteId: m[2] } as const;
   }
 
   if ((m = r.match(/^room\/(\w+)/))) {

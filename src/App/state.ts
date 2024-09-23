@@ -5,12 +5,20 @@ import { createInitialGame, Game, isInput, registerInput } from "./game";
 
 type Remote = { remoteId: string; hand: "right" | "left" };
 
+const isRemote = (x: any): x is Remote =>
+  x &&
+  typeof x.remote === "string" &&
+  (x.hand === "right" || x.hand === "left");
+
 export type State<Game = any> =
   | { type: "404"; pathname: string; search: string; hash: string }
   | { type: "home" }
+  | { type: "room-closed"; roomId: string; remoteId?: string }
   | ((
       | {
           type: "viewer";
+          game: Game | undefined;
+          connectedRemotes: Remote[];
         }
       | {
           type: "remote";
@@ -22,16 +30,12 @@ export type State<Game = any> =
         | {
             roomId: string;
             connectionStatus: "ready";
-            game: Game | undefined;
-            connectedRemotes: Remote[];
-            leader: boolean;
           }
         | {
             roomId: string;
             connectionStatus: "connecting";
             game?: undefined;
             connectedRemotes?: undefined;
-            leader?: undefined;
           }
       ));
 
@@ -79,7 +83,8 @@ const createSubscribeToChange = <State>(
       if (!equalsFn(previousValue, value)) {
         cleanUp?.();
         cleanUps.delete(cleanUp);
-        cleanUp = handler(previousValue) || undefined;
+        previousValue = value;
+        cleanUp = handler(value) || undefined;
         cleanUps.add(cleanUp);
       }
     });
@@ -140,11 +145,13 @@ export const createState = () => {
     }
 
     if (route.name === "lobby") {
-      setState({
-        type: "viewer",
-        roomId: route.roomId,
-        connectionStatus: "connecting",
-      });
+      setState({ type: "home" });
+
+      // setState({
+      //   type: "viewer",
+      //   roomId: route.roomId,
+      //   connectionStatus: "connecting",
+      // });
     }
   }
 
@@ -160,6 +167,9 @@ export const createState = () => {
           return buildRoute({ name: "home" });
         case "404":
           return buildRoute({ ...state, name: "404" });
+        case "room-closed":
+          if (state.remoteId) return buildRoute({ ...state, name: "remote" });
+          else return buildRoute({ name: "lobby", roomId: state.roomId });
       }
     },
     (url) => {
@@ -186,45 +196,54 @@ export const createState = () => {
 
         // listen to game events
         room.subscribe("event", ({ event }: any) => {
-          if (
-            event.type === "remote-input" &&
-            isInput(event) &&
-            (state.type === "viewer" || state.type === "remote") &&
-            state.game
-          )
-            setState({ ...state, game: registerInput(state.game, event) });
+          if (event.type !== "remote-input") return;
+          if (state.type !== "viewer" || !state.game) return;
+
+          const remote = state.connectedRemotes.find(
+            (r) => r.remoteId === event.remoteId
+          );
+
+          if (!remote) return;
+
+          const input = {
+            kind: event.kind,
+            hand: remote.hand,
+            timestamp: event.globalTimestamp - state.game.trackStartedDate,
+          };
+
+          if (!isInput(input)) return;
+
+          setState({ ...state, game: registerInput(state.game, input) });
         });
 
         // update connected remote from other presences
         const updateOthers = () => {
           if (!room) return;
-          if (state.type !== "viewer" && state.type !== "remote") return;
 
           const others = room.getOthers();
 
-          const connectedRemotes = others.map((o) => o.presence) as {
-            remoteId: string;
-            hand: "right" | "left";
-          }[];
+          // update connected remotes
+          if (state.type === "viewer") {
+            const connectedRemotes = others
+              .map((o) => o.presence)
+              .filter(isRemote);
 
-          if (state.type === "remote")
-            connectedRemotes.unshift({
-              remoteId: state.remoteId,
-              hand: state.hand,
-            });
+            if (!deepEqual(state.connectedRemotes, connectedRemotes))
+              setState({
+                ...state,
+                connectionStatus: "ready",
+                connectedRemotes,
+              });
+          }
 
-          if (!deepEqual(state.connectedRemotes, connectedRemotes))
-            setState({
-              ...state,
-              connectionStatus: "ready",
-              connectedRemotes,
-              leader: false,
-            });
+          if (state.type === "remote") {
+            const haveMaster = others.some((o) => o.presence.master);
 
-          //
-          const selfId = room.getSelf()?.connectionId;
-          if (selfId && others.every((o) => o.connectionId < selfId)) {
-            setState({ ...state, leader: true } as any);
+            if (!haveMaster)
+              setState({
+                ...state,
+                type: "room-closed",
+              });
           }
         };
 
@@ -240,10 +259,14 @@ export const createState = () => {
 
     // set user data
     subscribeToChange(
-      (state) =>
-        state.type === "remote"
-          ? { remoteId: state.remoteId, hand: state.hand }
-          : undefined,
+      (state) => {
+        if (state.type === "remote")
+          return { remoteId: state.remoteId, hand: state.hand };
+
+        if (state.type === "viewer") return { master: true };
+
+        return undefined;
+      },
 
       (data) => {
         if (data && room) room.updatePresence(data);
@@ -267,6 +290,8 @@ export const createState = () => {
 
   const startGame = (track: string, goals: Game["goals"]) => {
     if (state.type !== "viewer") return;
+    if (state.connectionStatus !== "ready") return;
+
     setState({
       ...state,
       game: createInitialGame(track, goals, Date.now()),
@@ -274,27 +299,14 @@ export const createState = () => {
   };
 
   const inputRemote = (kind: "ring" | "skin") => {
-    if (state.type !== "remote" || !state.game) return;
-
-    const timestamp = Date.now() - state.game.trackStartedDate;
-    const hand = state.connectedRemotes.find(
-      (r) => r.remoteId === state.remoteId
-    )?.hand;
-
-    if (!hand) return;
-
-    const input = { kind, timestamp, hand };
-
-    const game = registerInput(state.game, input);
-    setState({ ...state, game });
+    if (state.type !== "remote") return;
 
     room?.broadcastEvent({
       type: "remote-input",
-      ...input,
+      globalTimestamp: Date.now(),
       remoteId: state.remoteId,
+      kind,
     });
-
-    room?.getStorage().then((storage) => storage.root.set);
   };
 
   const dispose = () => {
