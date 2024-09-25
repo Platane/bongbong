@@ -14,6 +14,7 @@ export type State<Game = any> =
   | { type: "404"; pathname: string; search: string; hash: string }
   | { type: "home" }
   | { type: "room-closed"; roomId: string; remoteId?: string }
+  | { type: "remote-unsupported"; roomId: string }
   | ((
       | {
           type: "viewer";
@@ -29,7 +30,7 @@ export type State<Game = any> =
       (
         | {
             roomId: string;
-            connectionStatus: "ready";
+            connectionStatus: "ready" | "re-connecting";
           }
         | {
             roomId: string;
@@ -237,6 +238,8 @@ export const createState = () => {
           }
 
           if (state.type === "remote") {
+            debugger;
+
             const haveMaster = others.some((o) => o.presence.master);
 
             if (!haveMaster)
@@ -288,9 +291,11 @@ export const createState = () => {
     });
   };
 
-  const startGame = (track: string, goals: Game["goals"]) => {
+  const startGame = (track: Game["track"], goals: Game["goals"]) => {
     if (state.type !== "viewer") return;
-    if (state.connectionStatus !== "ready") return;
+    // if (state.connectionStatus !== "ready") return;
+
+    track.audio.play();
 
     setState({
       ...state,
@@ -303,10 +308,15 @@ export const createState = () => {
 
     room?.broadcastEvent({
       type: "remote-input",
-      globalTimestamp: Date.now(),
+      globalTimestamp: Date.now() / 1000,
       remoteId: state.remoteId,
       kind,
     });
+  };
+
+  const switchHand = (hand: "left" | "right") => {
+    if (state.type !== "remote") return;
+    setState({ ...state, hand });
   };
 
   const dispose = () => {
@@ -323,6 +333,7 @@ export const createState = () => {
     createRoom,
     startGame,
     inputRemote,
+    switchHand,
   };
 };
 

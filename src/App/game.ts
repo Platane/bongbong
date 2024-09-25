@@ -3,7 +3,7 @@ export type InputKind = "ring" | "skin";
 export type Input = { timestamp: number; kind: InputKind };
 
 export type Game = {
-  track: string;
+  track: { title: string; audio: HTMLAudioElement };
   goals: (
     | { kind: "ring" | "skin"; timestamp: number }
     | { kind: "blast"; timestamp: number; duration: number }
@@ -24,4 +24,6 @@ export const createInitialGame = (
   track: Game["track"],
   goals: Game["goals"],
   trackStartedDate: number
-): Game => ({ track, goals, trackStartedDate, inputs: [] });
+): Game => {
+  return { track, goals, trackStartedDate, inputs: [] };
+};
