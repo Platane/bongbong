@@ -11,14 +11,20 @@ export const App = () => {
   return (
     <>
       <h1>{state.type}</h1>
-      <pre>{JSON.stringify(state, null, 2)}</pre>
 
       {state.type === "home" && <Home {...state} />}
-      {state.type === "viewer" && !state.game && (
-        <Lobby {...state} startGame={(track) => state.startGame(track, [])} />
+      {state.type === "viewer" && state.connectionStatus === "connecting" && (
+        <div>connecting...</div>
       )}
+      {state.type === "viewer" &&
+        state.connectionStatus !== "connecting" &&
+        !state.game && (
+          <Lobby {...state} startGame={(track) => state.startGame(track, [])} />
+        )}
       {state.type === "viewer" && state.game && <Game {...state} />}
       {state.type === "remote" && <Remote {...state} />}
+
+      <pre>{JSON.stringify(state, null, 2)}</pre>
     </>
   );
 };
@@ -53,6 +59,10 @@ const Lobby = ({
               onClick={() => {
                 const audio = new Audio();
                 audio.src = track.src;
+                audio.volume = 0;
+                audio.play();
+                audio.pause();
+                audio.volume = 1;
                 startGame({ audio, ...track });
               }}
             >
@@ -67,13 +77,39 @@ const Lobby = ({
 };
 
 const Remote = ({
+  hand,
   inputRemote,
+  switchHand,
 }: {
+  hand: "left" | "right";
   inputRemote: (kind: "ring" | "skin") => void;
+  switchHand: (hand: "left" | "right") => void;
 }) => (
   <>
     <button onClick={() => inputRemote("ring")}>ring</button>
     <button onClick={() => inputRemote("skin")}>skin</button>
+
+    <div>
+      <input
+        type="radio"
+        id="hand-left"
+        name="hand"
+        value="left"
+        checked={hand === "left"}
+        onChange={(e) => e.target.checked && switchHand("left")}
+      />
+      <label htmlFor="hand-left">left</label>
+
+      <input
+        type="radio"
+        id="hand-right"
+        name="hand"
+        value="right"
+        checked={hand === "right"}
+        onChange={(e) => e.target.checked && switchHand("right")}
+      />
+      <label htmlFor="hand-right">right</label>
+    </div>
   </>
 );
 

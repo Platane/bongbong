@@ -7,7 +7,7 @@ type Remote = { remoteId: string; hand: "right" | "left" };
 
 const isRemote = (x: any): x is Remote =>
   x &&
-  typeof x.remote === "string" &&
+  typeof x.remoteId === "string" &&
   (x.hand === "right" || x.hand === "left");
 
 export type State<Game = any> =
@@ -26,19 +26,10 @@ export type State<Game = any> =
           remoteId: string;
           hand: "right" | "left";
         }
-    ) &
-      (
-        | {
-            roomId: string;
-            connectionStatus: "ready" | "re-connecting";
-          }
-        | {
-            roomId: string;
-            connectionStatus: "connecting";
-            game?: undefined;
-            connectedRemotes?: undefined;
-          }
-      ));
+    ) & {
+      roomId: string;
+      connectionStatus: "connecting" | "ready" | "re-connecting";
+    });
 
 const LIVEBLOCKS_API_KEY =
   "pk_dev_zC81tVVIuXr9D1AHq0fwfhZON1PCYj4UjXi9f6buP9ddTErRWvPrDwyJzB3TEQDJ";
@@ -217,6 +208,8 @@ export const createState = () => {
           setState({ ...state, game: registerInput(state.game, input) });
         });
 
+        let joinedOnce = false;
+
         // update connected remote from other presences
         const updateOthers = () => {
           if (!room) return;
@@ -238,22 +231,28 @@ export const createState = () => {
           }
 
           if (state.type === "remote") {
-            debugger;
-
             const haveMaster = others.some((o) => o.presence.master);
 
-            if (!haveMaster)
+            if (!haveMaster && joinedOnce)
               setState({
-                ...state,
+                roomId: state.roomId,
+                remoteId: state.remoteId,
                 type: "room-closed",
               });
           }
+
+          joinedOnce = true;
         };
 
         room.subscribe("others", updateOthers);
 
         room.subscribe("status", () => {
-          console.log("status", room?.getStatus());
+          if (!room) return;
+          switch (room.getStatus()) {
+            case "connected":
+              setState({ ...state, connectionStatus: "ready" });
+          }
+          console.log("status", room.getStatus());
         });
 
         return leave;
