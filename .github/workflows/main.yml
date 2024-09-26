@@ -17,6 +17,8 @@ jobs:
 
       - run: bunx vite build --base /bongbong/
 
+      - run: cp dist/index.html dist/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
