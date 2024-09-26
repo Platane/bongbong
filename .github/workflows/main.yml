@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   main:
+    permissions:
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
 
     steps:
