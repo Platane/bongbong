@@ -4,6 +4,7 @@ import type { Game, Input } from "./game";
 import QRCode from "react-qr-code";
 import { buildRoute } from "./routes";
 import { tracks } from "./trackList";
+import { Track } from "../Track/Track";
 
 export const App = () => {
   const state = useState();
@@ -60,10 +61,11 @@ const Lobby = ({
                 const audio = new Audio();
                 audio.src = track.src;
                 audio.volume = 0;
-                audio.play();
-                audio.pause();
-                audio.volume = 1;
-                startGame({ audio, ...track });
+                audio.play().then(() => {
+                  audio.pause();
+                  audio.volume = 1;
+                  startGame({ audio, ...track });
+                });
               }}
             >
               {track.title}
@@ -113,51 +115,6 @@ const Remote = ({
   </>
 );
 
-const Track = ({ trackStartedDate, track, inputs }: Game & {}) => {
-  const [, refresh] = React.useReducer((x) => 1 + x, 1);
-  React.useEffect(() => {
-    let cancel: number;
-    const loop = () => {
-      refresh();
-      cancel = requestAnimationFrame(loop);
-    };
-    loop();
-    return () => cancelAnimationFrame(cancel);
-  }, []);
-
-  // const t = Date.now() - trackStartedDate;
-  const t = track.audio.currentTime;
-  const duration = track.audio.duration;
-
-  return (
-    <>
-      <pre>t: {t}s</pre>
-      <svg viewBox={`${t} 0 3 1`} style={{ width: "100%" }}>
-        {Array.from({ length: Math.ceil(duration + 3) }, (_, s) => (
-          <line
-            key={s}
-            x1={s}
-            x2={s}
-            y1="0"
-            y2="1"
-            stroke="purple"
-            strokeWidth={0.01}
-          />
-        ))}
-
-        {inputs.map((o, i) => (
-          <circle
-            key={i}
-            cx={o.timestamp}
-            cy={0.5}
-            r={0.1}
-            fill={o.kind === "ring" ? "blue" : "red"}
-          />
-        ))}
-      </svg>
-    </>
-  );
-};
 const Game = ({ game }: { game: Game }) => {
   return <Track {...game} />;
 };

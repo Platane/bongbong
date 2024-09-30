@@ -200,7 +200,7 @@ export const createState = () => {
           const input = {
             kind: event.kind,
             hand: remote.hand,
-            timestamp: event.globalTimestamp - state.game.trackStartedDate,
+            time: audioTracker.getTime(event.timestamp),
           };
 
           if (!isInput(input)) return;
@@ -208,6 +208,7 @@ export const createState = () => {
           setState({ ...state, game: registerInput(state.game, input) });
         });
 
+        // first update does not contains the others somehow
         let joinedOnce = false;
 
         // update connected remote from other presences
@@ -250,7 +251,8 @@ export const createState = () => {
           if (!room) return;
           switch (room.getStatus()) {
             case "connected":
-              setState({ ...state, connectionStatus: "ready" });
+              if (state.type === "viewer" || state.type === "remote")
+                setState({ ...state, connectionStatus: "ready" });
           }
           console.log("status", room.getStatus());
         });
@@ -290,10 +292,14 @@ export const createState = () => {
     });
   };
 
+  let audioTracker: ReturnType<typeof createAudioTracker>;
+
   const startGame = (track: Game["track"], goals: Game["goals"]) => {
     if (state.type !== "viewer") return;
     // if (state.connectionStatus !== "ready") return;
 
+    audioTracker?.dispose();
+    audioTracker = createAudioTracker(track.audio);
     track.audio.play();
 
     setState({
@@ -307,7 +313,7 @@ export const createState = () => {
 
     room?.broadcastEvent({
       type: "remote-input",
-      globalTimestamp: Date.now() / 1000,
+      timestamp: Date.now() / 1000,
       remoteId: state.remoteId,
       kind,
     });
@@ -337,3 +343,49 @@ export const createState = () => {
 };
 
 const generateRandomId = () => Math.random().toString(36).slice(2);
+
+const createAudioTracker = (audio: HTMLAudioElement) => {
+  const abortController = new AbortController();
+
+  const keys = [] as { time: number; timestamp: number }[];
+
+  const addKey = () =>
+    keys.push({ timestamp: Date.now() / 1000, time: audio.currentTime });
+
+  addKey();
+
+  const o = { signal: abortController.signal };
+  audio.addEventListener("cuechange", addKey, o);
+  audio.addEventListener("durationchange", addKey, o);
+  audio.addEventListener("ended", addKey, o);
+  audio.addEventListener("pause", addKey, o);
+  audio.addEventListener("play", addKey, o);
+  audio.addEventListener("playing", addKey, o);
+  audio.addEventListener("ratechange", addKey, o);
+  audio.addEventListener("seeked", addKey, o);
+
+  const getTime = (timestamp: number) => {
+    if (timestamp < keys[0].timestamp) return keys[0].time;
+
+    keys.push({ timestamp: Date.now() / 1000, time: audio.currentTime });
+
+    let i = 0;
+    for (; keys[i + 1] && keys[i + 1].timestamp < timestamp; i++);
+
+    const a = keys[i];
+    const b = keys[i + 1];
+
+    keys.pop();
+
+    if (!b) return a.time;
+
+    const k = (a.timestamp - timestamp) / (a.timestamp - b.timestamp);
+
+    return a.time + (b.time - a.time) * k;
+  };
+  const dispose = () => {
+    abortController.abort();
+  };
+
+  return { getTime, dispose };
+};
