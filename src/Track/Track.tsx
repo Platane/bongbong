@@ -31,7 +31,7 @@ export const Track = ({ track, inputs }: Game & {}) => {
             y1="0"
             y2="1"
             stroke="purple"
-            strokeWidth={0.01}
+            strokeWidth={0.005}
           />
         ))}
 

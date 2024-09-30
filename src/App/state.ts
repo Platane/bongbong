@@ -329,6 +329,11 @@ export const createState = () => {
     disposeSubscribeToChange();
   };
 
+  const markRemoteUnsupported = () => {
+    if (state.type === "remote" || state.type === "room-closed")
+      setState({ type: "remote-unsupported", roomId: state.roomId });
+  };
+
   return {
     getState,
     subscribe,
@@ -339,6 +344,7 @@ export const createState = () => {
     startGame,
     inputRemote,
     switchHand,
+    markRemoteUnsupported,
   };
 };
 

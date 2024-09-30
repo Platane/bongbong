@@ -5,6 +5,7 @@ import QRCode from "react-qr-code";
 import { buildRoute } from "./routes";
 import { tracks } from "./trackList";
 import { Track } from "../Track/Track";
+import { Remote } from "./Remote";
 
 export const App = () => {
   const state = useState();
@@ -77,43 +78,6 @@ const Lobby = ({
     </>
   );
 };
-
-const Remote = ({
-  hand,
-  inputRemote,
-  switchHand,
-}: {
-  hand: "left" | "right";
-  inputRemote: (kind: "ring" | "skin") => void;
-  switchHand: (hand: "left" | "right") => void;
-}) => (
-  <>
-    <button onClick={() => inputRemote("ring")}>ring</button>
-    <button onClick={() => inputRemote("skin")}>skin</button>
-
-    <div>
-      <input
-        type="radio"
-        id="hand-left"
-        name="hand"
-        value="left"
-        checked={hand === "left"}
-        onChange={(e) => e.target.checked && switchHand("left")}
-      />
-      <label htmlFor="hand-left">left</label>
-
-      <input
-        type="radio"
-        id="hand-right"
-        name="hand"
-        value="right"
-        checked={hand === "right"}
-        onChange={(e) => e.target.checked && switchHand("right")}
-      />
-      <label htmlFor="hand-right">right</label>
-    </div>
-  </>
-);
 
 const Game = ({ game }: { game: Game }) => {
   return <Track {...game} />;
