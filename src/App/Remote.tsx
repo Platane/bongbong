@@ -14,7 +14,7 @@ export const Remote = ({
   const [v, setV] = React.useState({ x: 0, y: 0, z: 0 });
 
   React.useEffect(() => {
-    if (window.DeviceMotionEvent != undefined) {
+    if (!window.DeviceMotionEvent) {
       markRemoteUnsupported();
       return;
     }

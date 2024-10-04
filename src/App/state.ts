@@ -113,6 +113,9 @@ export const createState = () => {
 
   const liveBlocksClient = createClient({ publicApiKey: LIVEBLOCKS_API_KEY });
 
+  // does it make it connect faster?
+  liveBlocksClient.enterRoom("lobby");
+
   // check initial route
   {
     const route = parseRoute(window.location.href);
@@ -180,7 +183,7 @@ export const createState = () => {
           : null,
 
       (roomId) => {
-        if (room?.id === roomId || !roomId) return;
+        if (!roomId) return;
 
         const { leave, room: room_ } = liveBlocksClient.enterRoom(roomId);
 
@@ -212,7 +215,7 @@ export const createState = () => {
         let joinedOnce = false;
 
         // update connected remote from other presences
-        const updateOthers = () => {
+        room.subscribe("others", () => {
           if (!room) return;
 
           const others = room.getOthers();
@@ -243,9 +246,7 @@ export const createState = () => {
           }
 
           joinedOnce = true;
-        };
-
-        room.subscribe("others", updateOthers);
+        });
 
         room.subscribe("status", () => {
           if (!room) return;
@@ -330,8 +331,9 @@ export const createState = () => {
   };
 
   const markRemoteUnsupported = () => {
-    if (state.type === "remote" || state.type === "room-closed")
+    if (state.type === "remote" || state.type === "room-closed") {
       setState({ type: "remote-unsupported", roomId: state.roomId });
+    }
   };
 
   return {
