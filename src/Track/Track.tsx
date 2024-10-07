@@ -42,6 +42,13 @@ export const Track = ({ track, inputs }: Game & {}) => {
             cy={0.5}
             r={0.1}
             fill={o.kind === "ring" ? "blue" : "red"}
+            stroke="grey"
+            strokeLinecap="round"
+            strokeWidth={0.05}
+            strokeDasharray={3.14 * 0.1}
+            strokeDashoffset={
+              o.hand === "left" ? 3.14 * 0.1 * -0.5 : 3.14 * 0.1 * 0.5
+            }
           />
         ))}
       </svg>

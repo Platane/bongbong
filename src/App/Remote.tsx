@@ -36,6 +36,8 @@ export const Remote = ({
         const y = event.acceleration?.y ?? null;
         const z = event.acceleration?.z ?? null;
 
+        console.log(xg, x);
+
         if (
           typeof x === "number" &&
           typeof y === "number" &&

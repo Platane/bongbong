@@ -1,6 +1,6 @@
 export type InputKind = "ring" | "skin";
 
-export type Input = { time: number; kind: InputKind };
+export type Input = { time: number; kind: InputKind; hand: "left" | "right" };
 
 export type Game = {
   track: { title: string; audio: HTMLAudioElement };
