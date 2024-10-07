@@ -123,7 +123,7 @@ export const createState = () => {
       setState({
         type: "remote",
         remoteId: generateRandomId(),
-        hand: "left",
+        hand: "right",
         roomId: route.roomId,
         connectionStatus: "connecting",
       });
@@ -132,7 +132,7 @@ export const createState = () => {
     if (route.name === "remote") {
       setState({
         type: "remote",
-        hand: "left",
+        hand: "right",
         remoteId: route.remoteId,
         roomId: route.roomId,
         connectionStatus: "connecting",
