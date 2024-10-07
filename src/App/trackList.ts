@@ -17,6 +17,8 @@ export const tracks = [
     src: track2_url,
   },
   {
+    bpm: 200,
+    start: 1000,
     title: "DragonForce - Through the Fire and Flames",
     src: track3_url,
   },
