@@ -13,7 +13,15 @@ export const Remote = ({
 }) => {
   const [v, setV] = React.useState({ x: 0, y: 0, z: 0 });
   const [history, setHistory] = React.useState(
-    [] as { la: number; dotg: number; hit: "skin" | "ring" | null }[]
+    [] as {
+      la: number;
+      dotg: number;
+      alpha: number;
+      beta: number;
+      gamma: number;
+      timestamp: number;
+      hit: "skin" | "ring" | null;
+    }[]
   );
 
   React.useEffect(() => {
@@ -23,6 +31,8 @@ export const Remote = ({
     }
 
     let active = false;
+    let activeAlpha = false;
+    let activeGamma = 0;
 
     const abortController = new AbortController();
     window.addEventListener(
@@ -36,59 +46,90 @@ export const Remote = ({
         const y = event.acceleration?.y ?? null;
         const z = event.acceleration?.z ?? null;
 
-        console.log(event.rotationRate?.alpha);
+        const alpha = event.rotationRate?.alpha ?? null;
+        const gamma = event.rotationRate?.gamma ?? null;
+        const beta = event.rotationRate?.beta ?? null;
 
         if (
-          typeof x === "number" &&
-          typeof y === "number" &&
-          typeof z === "number" &&
-          Number.isFinite(x) &&
-          Number.isFinite(y) &&
-          Number.isFinite(z) &&
-          typeof xg === "number" &&
-          typeof yg === "number" &&
-          typeof zg === "number" &&
-          Number.isFinite(xg) &&
-          Number.isFinite(yg) &&
-          Number.isFinite(zg)
+          !(
+            typeof alpha === "number" &&
+            typeof gamma === "number" &&
+            typeof beta === "number" &&
+            Number.isFinite(alpha) &&
+            Number.isFinite(gamma) &&
+            Number.isFinite(beta) &&
+            typeof x === "number" &&
+            typeof y === "number" &&
+            typeof z === "number" &&
+            Number.isFinite(x) &&
+            Number.isFinite(y) &&
+            Number.isFinite(z) &&
+            typeof xg === "number" &&
+            typeof yg === "number" &&
+            typeof zg === "number" &&
+            Number.isFinite(xg) &&
+            Number.isFinite(yg) &&
+            Number.isFinite(zg)
+          )
         ) {
-          const g = { x: xg - x, y: yg - y, z: zg - z };
-
-          const a = { x, y, z };
-
-          const la = Math.hypot(x, y, z);
-
-          const lg = Math.hypot(g.x, g.y, g.z);
-          const dotg = (g.x * a.x + g.y * a.y + g.z * a.z) / (la * lg);
-
-          const THRESHOLD_ACTIVATION = 6;
-          const THRESHOLD_DEACTIVATION = THRESHOLD_ACTIVATION / 3;
-
-          let hit = null as null | "skin" | "ring";
-
-          if (la > THRESHOLD_ACTIVATION && !active) {
-            if (Math.abs(dotg) < 0.5) hit = "ring";
-            if (Math.abs(dotg) > 0.5) hit = "skin";
-
-            if (hit) {
-              active = true;
-              inputRemote(hit);
-            }
-          }
-
-          if (la < THRESHOLD_DEACTIVATION && active) {
-            active = false;
-          }
-
-          setHistory((h) => {
-            const hs = [{ la, dotg, hit }, ...h];
-            while (hs.length > 100) hs.pop();
-            return hs;
-          });
-          setV(a);
-        } else {
           markRemoteUnsupported();
+
+          return;
         }
+
+        const g = { x: xg - x, y: yg - y, z: zg - z };
+
+        const a = { x, y, z };
+
+        const la = Math.hypot(x, y, z);
+
+        const lg = Math.hypot(g.x, g.y, g.z);
+        const dotg = (g.x * a.x + g.y * a.y + g.z * a.z) / (la * lg);
+
+        const THRESHOLD_ACTIVATION = 6;
+        const THRESHOLD_DEACTIVATION = THRESHOLD_ACTIVATION / 3;
+
+        let hit = null as null | "skin" | "ring";
+
+        // if (la > THRESHOLD_ACTIVATION && !active) {
+        //   if (Math.abs(dotg) < 0.5) hit = "ring";
+        //   if (Math.abs(dotg) > 0.5) hit = "skin";
+
+        //   if (hit) {
+        //     active = true;
+        //     inputRemote(hit);
+        //   }
+        // }
+
+        // if (la < THRESHOLD_DEACTIVATION && active) {
+        //   active = false;
+        // }
+
+        if (alpha < -120 && !activeAlpha) {
+          activeAlpha = true;
+          hit = "skin";
+        }
+        if (alpha > 20 && activeAlpha) {
+          activeAlpha = false;
+        }
+
+        if (Math.abs(gamma) > 120 && activeGamma === 0) {
+          activeGamma = gamma > 0 ? 1 : -1;
+          hit = "ring";
+        }
+        if (gamma * activeGamma < 20) {
+          activeGamma = 0;
+        }
+
+        setHistory((h) => {
+          const hs = [
+            { alpha, beta, gamma, la, dotg, hit, timestamp: event.timeStamp },
+            ...h,
+          ];
+          while (hs.length > 120) hs.pop();
+          return hs;
+        });
+        setV({ x: alpha / 180, y: beta / 180, z: gamma / 180 });
       },
       { signal: abortController.signal }
     );
@@ -122,7 +163,7 @@ export const Remote = ({
         />
         <label htmlFor="hand-right">right</label>
       </div>
-      <svg viewBox="-10 -2 20 9">
+      <svg viewBox="-10 -2 20 20">
         <line
           style={{}}
           y2="0"
@@ -164,6 +205,36 @@ export const Remote = ({
             }
             strokeWidth={0.06}
             stroke="black"
+            fill="none"
+          />
+
+          <path
+            d={
+              "M-10,10 " +
+              history
+                .map(({ alpha }, i, { length }) => {
+                  const x = i / length;
+                  return x * 20 - 10 + "," + (10 + alpha / 100);
+                })
+                .join(" ")
+            }
+            strokeWidth={0.06}
+            stroke="blue"
+            fill="none"
+          />
+
+          <path
+            d={
+              "M-10,15 " +
+              history
+                .map(({ gamma }, i, { length }) => {
+                  const x = i / length;
+                  return x * 20 - 10 + "," + (15 + gamma / 100);
+                })
+                .join(" ")
+            }
+            strokeWidth={0.06}
+            stroke="orange"
             fill="none"
           />
 
