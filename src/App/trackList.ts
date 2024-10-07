@@ -22,7 +22,7 @@ const toNotes = (
     .map((s) => {
       const time = i * period + offset;
 
-      if (!s.match(/[RS\-]/)) return;
+      if (!s.match(/[RSB\-]/)) return;
 
       i++;
 
@@ -44,10 +44,14 @@ export const tracks = [
     src: track1_url,
     ...toNotes(
       `
-      S - - - | S - - - | S - - - | S - - - | S - - - | S - - - | 
+      - - - - | S - - - | S - - - | S - - - |
+      S - - - | S - - - | S - - - | S - R R | 
+      S - - - | - - - - | - - - - | - - - - |
+      - - - - | - - - - | - - - - | - - - - |
+      S - - S | S - S - | R R R R | - - - - |
       
       `,
-      { bpm: 174, offset: 2.7 }
+      { bpm: 174, offset: 0 }
     ),
   },
   {
