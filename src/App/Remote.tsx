@@ -53,19 +53,19 @@ export const Remote = ({
 
         let hit = null as null | "skin" | "ring";
 
-        if (alpha < -120 && !activeAlpha) {
+        if (alpha < -120 && !activeAlpha && !activeGamma) {
           activeAlpha = true;
           hit = "skin";
         }
-        if (alpha > 20 && activeAlpha) {
+        if (alpha > 20) {
           activeAlpha = false;
         }
 
-        if (gamma * handRef.current < -120 && !activeGamma) {
+        if (gamma * handRef.current < -120 && !activeGamma && !activeAlpha) {
           activeGamma = true;
           hit = "ring";
         }
-        if (gamma * handRef.current > 20 && activeGamma) {
+        if (gamma * handRef.current > 20) {
           activeGamma = false;
         }
 
@@ -77,7 +77,7 @@ export const Remote = ({
           return hs;
         });
       },
-      { signal: abortController.signal }
+      { signal: abortController.signal, passive: true }
     );
 
     return () => abortController.abort();
