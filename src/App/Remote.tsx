@@ -157,6 +157,7 @@ export const Remote = ({
 
           return (
             <circle
+              key={i}
               r={0.2}
               cx={x}
               cy={0}
