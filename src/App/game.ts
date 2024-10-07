@@ -2,12 +2,20 @@ export type InputKind = "ring" | "skin";
 
 export type Input = { time: number; kind: InputKind; hand: "left" | "right" };
 
+export type Note =
+  | { kind: "ring" | "skin"; time: number }
+  | { kind: "blast"; time: number; duration: number };
+
+export type Partition = Note[];
+
 export type Game = {
-  track: { title: string; audio: HTMLAudioElement };
-  goals: (
-    | { kind: "ring" | "skin"; time: number }
-    | { kind: "blast"; time: number; duration: number }
-  )[];
+  track: {
+    title: string;
+    audio: HTMLAudioElement;
+    bpm: number;
+    offset: number;
+    partition: Partition;
+  };
   trackStartedDate: number;
   inputs: Input[];
 };

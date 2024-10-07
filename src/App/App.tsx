@@ -15,11 +15,11 @@ export const App = () => {
       <h1>{state.type}</h1>
 
       {state.type === "home" && <Home {...state} />}
-      {state.type === "viewer" && state.connectionStatus === "connecting" && (
+      {/* {state.type === "viewer" && state.connectionStatus === "connecting" && (
         <div>connecting...</div>
-      )}
+      )} */}
       {state.type === "viewer" &&
-        state.connectionStatus !== "connecting" &&
+        // state.connectionStatus !== "connecting" &&
         !state.game && (
           <Lobby {...state} startGame={(track) => state.startGame(track, [])} />
         )}
@@ -79,6 +79,15 @@ const Lobby = ({
   );
 };
 
-const Game = ({ game }: { game: Game }) => {
-  return <Track {...game} />;
+const Game = ({ game, roomId }: { game: Game; roomId: string }) => {
+  const joinUrl = window.origin + buildRoute({ name: "new-remote", roomId });
+
+  return (
+    <>
+      <a target="_blank" href={joinUrl}>
+        join with a new remote
+      </a>
+      <Track {...game} />
+    </>
+  );
 };

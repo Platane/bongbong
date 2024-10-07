@@ -36,7 +36,7 @@ export const Remote = ({
         const y = event.acceleration?.y ?? null;
         const z = event.acceleration?.z ?? null;
 
-        console.log(xg, x);
+        console.log(event.rotationRate?.alpha);
 
         if (
           typeof x === "number" &&
