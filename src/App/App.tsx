@@ -6,8 +6,11 @@ import { buildRoute } from "./routes";
 import { tracks } from "./trackList";
 import { Track } from "../Track/Track";
 import { Remote } from "./Remote";
+import { WebRTC } from "./WebRTC";
 
 export const App = () => {
+  return <WebRTC />;
+
   const state = useState();
 
   return (
