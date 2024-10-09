@@ -1,5 +1,5 @@
 import React from "react";
-import { Game } from "../App/game";
+import { Game } from "../src/App/game";
 
 export const Track = ({ track, inputs }: Game & {}) => {
   const [, refresh] = React.useReducer((x) => 1 + x, 1);

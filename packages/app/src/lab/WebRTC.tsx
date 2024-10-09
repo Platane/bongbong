@@ -229,54 +229,15 @@ const join = (key: string) => {
   };
 };
 
-const useAsyncMemo = <T, D>(
-  h: (signal: AbortSignal) => Promise<T>,
-  deps: D[]
-) => {
-  const r = React.useRef({
-    deps: [Symbol() as D],
-    abortController: new AbortController(),
-    value: null as T | null,
-    error: null as Error | null,
-  });
-  const [, refresh] = React.useReducer((x = 1) => 1 + x, 1);
-
-  if (arrayEquals(r.current.deps, deps)) {
-    const abortController = new AbortController();
-
-    if (r.current.value === null) r.current.abortController.abort();
-
-    r.current.deps = deps;
-    r.current.abortController = abortController;
-    r.current.error = null;
-    r.current.value = null;
-
-    const promise = h(abortController.signal)
-      .then((value) => {
-        r.current.value = value;
-        refresh();
-      })
-      .catch((err) => {
-        r.current.error = err;
-        refresh();
-      });
-  }
-
-  if (r.current.error) throw r.current.error;
-
-  return r.current.value;
-};
-
-const arrayEquals = <T,>(a: T[], b: T[]) =>
-  a.length === b.length && a.every((_, i) => a[i] === b[i]);
-
 const generateId = () =>
   Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 
 const wait = (delay = 0) => new Promise((r) => setTimeout(r, delay));
 
+const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
+
 const signalGet = async (key: string) => {
-  const res = await fetch("http://localhost:3000/blob/" + key, {
+  const res = await fetch(STORE_URL + "/blob/" + key, {
     method: "GET",
   });
 
@@ -298,7 +259,7 @@ const signalListen = async (key: string) => {
 };
 
 const signalSend = (key: string, data: any) =>
-  fetch("http://localhost:3000/blob/" + key, {
+  fetch(STORE_URL + "/blob/" + key, {
     body: JSON.stringify(data, null, 2),
     method: "PUT",
   }).then((res) => {
