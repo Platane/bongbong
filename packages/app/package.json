@@ -1,0 +1,23 @@
+{
+  "name": "@bongbong/app",
+  "author": {
+    "name": "platane"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@react-three/drei": "9.112.0",
+    "@react-three/fiber": "8.17.7",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "4.5.5",
+    "fast-deep-equal": "3.1.3",
+    "react-qr-code": "2.0.15"
+  },
+  "devDependencies": {
+    "vite": "5.4.6",
+    "@types/react": "18.3.7",
+    "@types/react-dom": "18.3.0"
+  }
+}

@@ -17,7 +17,7 @@ export const WebRTC = () => {
 };
 
 const Host = ({ roomKey }: { roomKey: string }) => {
-  const joinUrl = window.origin + "#" + roomKey;
+  const joinUrl = window.origin + import.meta.env.BASE_URL + "#" + roomKey;
 
   const [{ getDataChannel }] = React.useState(() => host(roomKey));
 
