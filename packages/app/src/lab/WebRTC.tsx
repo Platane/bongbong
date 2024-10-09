@@ -20,16 +20,20 @@ export const WebRTC = () => {
 const Host = ({ roomKey }: { roomKey: string }) => {
   const joinUrl = window.origin + import.meta.env.BASE_URL + "#" + roomKey;
 
-  const [{ getDataChannel }] = React.useState(() => host(roomKey));
-
   const [messages, addMessage] = React.useReducer(
     (messages: string[], message: string) => [...messages, message],
     []
   );
 
+  const [{ getDataChannel }] = React.useState(() =>
+    host(roomKey, {
+      debug: (...args) => addMessage("[debug] " + args.join(", ")),
+    })
+  );
+
   React.useEffect(() => {
     getDataChannel().then((dataChannel) => {
-      dataChannel.addEventListener("open", async (event) => {
+      dataChannel.addEventListener("open", async () => {
         addMessage("open");
 
         while (true) {
@@ -62,21 +66,25 @@ const Host = ({ roomKey }: { roomKey: string }) => {
 };
 
 const Guest = ({ roomKey }: { roomKey: string }) => {
-  const [{ getDataChannel }] = React.useState(() => join(roomKey));
-
   const [messages, addMessage] = React.useReducer(
     (messages: string[], message: string) => [...messages, message],
     []
   );
 
+  const [{ getDataChannel }] = React.useState(() =>
+    join(roomKey, {
+      debug: (...args) => addMessage("[debug] " + args.join(", ")),
+    })
+  );
+
   React.useEffect(() => {
     getDataChannel().then((dataChannel) => {
-      dataChannel.addEventListener("open", async (event) => {
+      dataChannel.addEventListener("open", async () => {
         addMessage("open");
 
         while (true) {
           dataChannel.send(
-            JSON.stringify({ timestamp: Date.now(), content: "yolo" })
+            JSON.stringify({ timestamp: Date.now(), content: "from guest" })
           );
 
           await wait(1500);
