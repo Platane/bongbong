@@ -25,26 +25,13 @@ const Host = ({ roomKey }: { roomKey: string }) => {
     []
   );
 
-  const [{ getDataChannel }] = React.useState(() =>
-    host(roomKey, {
-      debug: (...args) => addMessage("[debug] " + args.join(", ")),
-    })
-  );
-
   React.useEffect(() => {
-    getDataChannel().then((dataChannel) => {
-      dataChannel.addEventListener("open", async () => {
-        addMessage("open");
+    const abortController = new AbortController();
 
-        while (true) {
-          dataChannel.send(
-            JSON.stringify({ timestamp: Date.now(), type: "ping" })
-          );
-
-          await wait(1500);
-        }
-      });
-
+    host(roomKey, {
+      signal: abortController.signal,
+      debug: (...args) => addMessage("[debug] " + args.join(", ")),
+    }).then(async (dataChannel) => {
       dataChannel.addEventListener("message", (event) => {
         const data = JSON.parse(event.data);
 
@@ -57,7 +44,17 @@ const Host = ({ roomKey }: { roomKey: string }) => {
             );
         }
       });
+
+      while (true) {
+        dataChannel.send(
+          JSON.stringify({ timestamp: Date.now(), type: "ping" })
+        );
+
+        await wait(1500);
+      }
     });
+
+    return abortController.abort;
   }, []);
 
   return (
@@ -79,26 +76,13 @@ const Guest = ({ roomKey }: { roomKey: string }) => {
     []
   );
 
-  const [{ getDataChannel }] = React.useState(() =>
-    join(roomKey, {
-      debug: (...args) => addMessage("[debug] " + args.join(", ")),
-    })
-  );
-
   React.useEffect(() => {
-    getDataChannel().then((dataChannel) => {
-      dataChannel.addEventListener("open", async () => {
-        addMessage("open");
+    const abortController = new AbortController();
 
-        while (true) {
-          dataChannel.send(
-            JSON.stringify({ timestamp: Date.now(), type: "ping" })
-          );
-
-          await wait(1500);
-        }
-      });
-
+    join(roomKey, {
+      signal: abortController.signal,
+      debug: (...args) => addMessage("[debug] " + args.join(", ")),
+    }).then(async (dataChannel) => {
       dataChannel.addEventListener("message", (event) => {
         const data = JSON.parse(event.data);
 
@@ -111,7 +95,17 @@ const Guest = ({ roomKey }: { roomKey: string }) => {
             );
         }
       });
+
+      while (true) {
+        dataChannel.send(
+          JSON.stringify({ timestamp: Date.now(), type: "ping" })
+        );
+
+        await wait(1500);
+      }
     });
+
+    return abortController.abort;
   }, []);
 
   return (

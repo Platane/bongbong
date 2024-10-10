@@ -4,162 +4,177 @@ const rtcConfiguration: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.mystunserver.tld" }],
 };
 
-export const host = (
+export const host = async (
   key: string,
-  { debug }: { debug?: (...args: any[]) => void } = {}
+  {
+    debug,
+    signal,
+  }: { signal?: AbortSignal; debug?: (...args: any[]) => void } = {}
 ) => {
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
+  // report connection status
   peerConnection.addEventListener("connectionstatechange", () =>
     debug?.("connection status", peerConnection.connectionState)
   );
 
-  let offer: RTCSessionDescriptionInit;
-  let localCandidate: RTCIceCandidate;
-  let signaled = false;
+  // clean up on abort
+  signal?.addEventListener("abort", () => peerConnection.close());
 
-  const after = async () => {
-    if (signaled) return;
+  const iceCandidatePromise = new Promise<RTCIceCandidate>((resolve) => {
+    peerConnection.addEventListener("icecandidate", (event) => {
+      if (!event.candidate) return;
 
-    if (!localCandidate) return;
-
-    if (!offer) return;
-
-    signaled = true;
-
-    debug?.("sending offer", localCandidate, offer);
-
-    await signalSend(key + "_offer", {
-      candidate: localCandidate,
-      offer,
+      resolve(event.candidate);
     });
-
-    debug?.("offer sent", localCandidate, offer);
-  };
-
-  peerConnection.addEventListener("icecandidate", (event) => {
-    if (!event.candidate) return;
-
-    debug?.("local candidate ready");
-
-    localCandidate = event.candidate;
-
-    after();
   });
 
-  peerConnection.addEventListener("negotiationneeded", async (event) => {
-    debug?.("negotiationneeded event");
+  iceCandidatePromise.then(() => debug?.("local candidate ready"));
 
-    offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    after();
-  });
-
-  debug?.("waiting for answer");
-
-  signalListen(key + "_answer").then(async ({ answer, candidate }) => {
-    debug?.("answer ready");
-
-    debug?.("setting remote description");
-
-    await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(answer)
-    );
-
-    debug?.("setting remote ice candidate");
-
-    await peerConnection.addIceCandidate(candidate);
-  });
+  debug?.("creating data channel");
 
   const dataChannel = peerConnection.createDataChannel("MyApp Channel");
 
-  return {
-    peerConnection,
-    getDataChannel: () => Promise.resolve(dataChannel),
-    close: () => {
-      peerConnection.close();
-    },
-  };
+  debug?.("waiting for offer and local candidate...");
+
+  const [offer, localCandidate] = await Promise.all([
+    peerConnection.createOffer().then(async (offer) => {
+      debug?.("offer created");
+
+      debug?.("setting local description...");
+      await peerConnection.setLocalDescription(offer);
+
+      debug?.("local description set");
+
+      return offer;
+    }),
+    iceCandidatePromise,
+  ]);
+
+  debug?.("sending offer and candidate...", localCandidate, offer);
+
+  signalSend(key + "_offer", { offer, candidate: localCandidate }, { signal });
+
+  debug?.("waiting for answer...");
+
+  const { answer, candidate: remoteCandidate } = await signalListen(
+    key + "_answer",
+    {
+      signal,
+      pollingDuration: 4000,
+      debug: debug && ((...args) => debug("polling for answer", ...args)),
+    }
+  );
+
+  debug?.("got an answer");
+
+  debug?.("setting the remote description");
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+
+  debug?.("setting the remote ice candidate");
+  await peerConnection.addIceCandidate(remoteCandidate);
+
+  debug?.("waiting for data channel ready...");
+  await new Promise<void>((resolve, reject) => {
+    if (dataChannel.readyState === "open") resolve();
+
+    dataChannel.addEventListener("error", (event) =>
+      reject(new Error("error while opening channel"))
+    );
+
+    dataChannel.addEventListener("open", resolve as any);
+  });
+
+  //
+  peerConnection.addEventListener("negotiationneeded", () =>
+    debug?.(
+      "negotiationneeded event after initiation; we should probably reset"
+    )
+  );
+
+  return dataChannel;
 };
 
-export const join = (
+export const join = async (
   key: string,
-  { debug }: { debug?: (...args: any[]) => void } = {}
+  {
+    debug,
+    signal,
+  }: { signal?: AbortSignal; debug?: (...args: any[]) => void } = {}
 ) => {
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
+  // report connection status
   peerConnection.addEventListener("connectionstatechange", () =>
     debug?.("connection status", peerConnection.connectionState)
   );
 
-  let localCandidate: RTCIceCandidate;
-  let answer: RTCLocalSessionDescriptionInit;
-  let signaled = false;
+  // clean up on abort
+  signal?.addEventListener("abort", () => peerConnection.close());
 
-  const after = async () => {
-    if (signaled) return;
+  const iceCandidatePromise = new Promise<RTCIceCandidate>((resolve) => {
+    peerConnection.addEventListener("icecandidate", (event) => {
+      if (!event.candidate) return;
 
-    if (!localCandidate) return;
-
-    signaled = true;
-
-    debug?.("sending answer", localCandidate, answer);
-
-    await signalSend(key + "_answer", {
-      candidate: localCandidate,
-      answer,
+      resolve(event.candidate);
     });
-
-    debug?.("answer sent");
-  };
-
-  peerConnection.addEventListener("icecandidate", (event) => {
-    if (!event.candidate) return;
-
-    debug?.("local candidate ready");
-
-    localCandidate = event.candidate;
-
-    after();
   });
+  iceCandidatePromise.then(() => debug?.("local candidate ready"));
 
-  debug?.("fetching offer");
-
-  signalGet(key + "_offer").then(async ({ offer, candidate }) => {
-    debug?.("offer fetched");
-
-    debug?.("setting remote description");
-
-    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-
-    debug?.("setting remote ice candidate");
-
-    await peerConnection.addIceCandidate(candidate);
-
-    debug?.("creating answer");
-
-    answer = await peerConnection.createAnswer();
-
-    await peerConnection.setLocalDescription(answer);
-
-    after();
+  const dataChannelPromise = new Promise<RTCDataChannel>((resolve) => {
+    peerConnection.addEventListener("datachannel", (event) =>
+      resolve(event.channel)
+    );
   });
+  dataChannelPromise.then(() => debug?.("datachannel discovered"));
 
-  let resolveDataChannel: (c: RTCDataChannel) => void;
-  const dataChannelPromise = new Promise<RTCDataChannel>(
-    (r) => (resolveDataChannel = r)
+  debug?.("fetching offer...");
+  const { offer, candidate: remoteCandidate } = await signalGet(
+    key + "_offer",
+    { signal }
   );
 
-  peerConnection.addEventListener("datachannel", (event) =>
-    resolveDataChannel(event.channel)
+  debug?.("got the offer");
+
+  debug?.("setting remote description...");
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+  debug?.("setting remote ice candidate...");
+  await peerConnection.addIceCandidate(remoteCandidate);
+
+  debug?.("creating answer...");
+  const answer = await peerConnection.createAnswer();
+
+  debug?.("setting local description...");
+  await peerConnection.setLocalDescription(answer);
+
+  const localCandidate = await iceCandidatePromise;
+
+  debug?.("sending answer...");
+  await signalSend(key + "_answer", { candidate: localCandidate, answer });
+
+  debug?.("answer sent...");
+
+  debug?.("waiting for data channel...");
+  const dataChannel = await dataChannelPromise;
+
+  debug?.("waiting for data channel ready...");
+  await new Promise<void>((resolve, reject) => {
+    if (dataChannel.readyState === "open") resolve();
+
+    dataChannel.addEventListener("error", (event) =>
+      reject(new Error("error while opening channel"))
+    );
+
+    dataChannel.addEventListener("open", resolve as any);
+  });
+
+  //
+  peerConnection.addEventListener("negotiationneeded", () =>
+    debug?.(
+      "negotiationneeded event after initiation; we should probably reset"
+    )
   );
 
-  return {
-    peerConnection,
-    getDataChannel: () => dataChannelPromise,
-    close: () => {
-      peerConnection.close();
-    },
-  };
+  return dataChannel;
 };
