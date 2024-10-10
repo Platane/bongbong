@@ -21,12 +21,21 @@ export const signalListen = async <R = any,>(
   {
     pollingDuration = 2000,
     signal,
-  }: { pollingDuration?: number; signal?: AbortSignal } = {}
+    debug,
+  }: {
+    pollingDuration?: number;
+    signal?: AbortSignal;
+    debug?: (...args: any[]) => void;
+  } = {}
 ) => {
   while (true) {
+    debug?.("fetching...");
+
     const value = await signalGet<R>(key, { signal });
 
     if (value) return value;
+
+    debug?.("no value found, retrying soon");
 
     await new Promise((r) => setTimeout(r, pollingDuration));
   }
