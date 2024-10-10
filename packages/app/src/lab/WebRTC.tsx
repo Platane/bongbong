@@ -38,7 +38,7 @@ const Host = ({ roomKey }: { roomKey: string }) => {
 
         while (true) {
           dataChannel.send(
-            JSON.stringify({ timestamp: Date.now(), content: "yolo" })
+            JSON.stringify({ timestamp: Date.now(), type: "ping" })
           );
 
           await wait(1500);
@@ -46,8 +46,16 @@ const Host = ({ roomKey }: { roomKey: string }) => {
       });
 
       dataChannel.addEventListener("message", (event) => {
-        const { timestamp, content } = JSON.parse(event.data);
-        addMessage(`${content} [${Date.now() - timestamp}ms]  `);
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+          case "ping":
+            return dataChannel.send(JSON.stringify({ ...data, type: "pong" }));
+          case "pong":
+            return addMessage(
+              "ping round-trip: " + (Date.now() - data.timestamp) + "ms"
+            );
+        }
       });
     });
   }, []);
@@ -84,7 +92,7 @@ const Guest = ({ roomKey }: { roomKey: string }) => {
 
         while (true) {
           dataChannel.send(
-            JSON.stringify({ timestamp: Date.now(), content: "from guest" })
+            JSON.stringify({ timestamp: Date.now(), type: "ping" })
           );
 
           await wait(1500);
@@ -92,8 +100,16 @@ const Guest = ({ roomKey }: { roomKey: string }) => {
       });
 
       dataChannel.addEventListener("message", (event) => {
-        const { timestamp, content } = JSON.parse(event.data);
-        addMessage(`${content} [${Date.now() - timestamp}ms]  `);
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+          case "ping":
+            return dataChannel.send(JSON.stringify({ ...data, type: "pong" }));
+          case "pong":
+            return addMessage(
+              "ping round-trip: " + (Date.now() - data.timestamp) + "ms"
+            );
+        }
       });
     });
   }, []);
