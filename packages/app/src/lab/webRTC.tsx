@@ -1,3 +1,5 @@
+import { signalGet, signalListen, signalSend } from "./signal";
+
 const rtcConfiguration: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.mystunserver.tld" }],
 };
@@ -161,38 +163,3 @@ export const join = (
     },
   };
 };
-
-const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
-
-const signalGet = async (key: string) => {
-  const res = await fetch(STORE_URL + "/blob/" + key, {
-    method: "GET",
-  });
-
-  if (res.ok) return res.json();
-
-  if (res.status !== 404) throw await res.text().catch(() => res.statusText);
-
-  return null;
-};
-
-const signalListen = async (
-  key: string,
-  { pollingDuration = 2000 }: { pollingDuration?: number } = {}
-) => {
-  while (true) {
-    const value = await signalGet(key);
-
-    if (value) return value;
-
-    await new Promise((r) => setTimeout(r, pollingDuration));
-  }
-};
-
-const signalSend = (key: string, data: any) =>
-  fetch(STORE_URL + "/blob/" + key, {
-    body: JSON.stringify(data, null, 2),
-    method: "PUT",
-  }).then((res) => {
-    if (!res.ok) return res.text().catch(() => res.statusText);
-  });
