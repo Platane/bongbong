@@ -1,8 +1,15 @@
 import * as React from "react";
 import QRCode from "react-qr-code";
-import { host, join } from "./webRTC";
+import { host, join } from "./webRTC-utils";
+import { signalBroadcast, signalListen } from "./signal";
 
 export const WebRTC = () => {
+  React.useEffect(() => {
+    const key = Math.random().toString().slice(2);
+    signalListen(key, console.log);
+    for (let k = 10; k--; ) signalBroadcast(key, { k });
+  }, []);
+
   const [joinKey] = React.useState(() => window.location.hash.slice(1) || null);
 
   const [hostKey] = React.useState(generateId);

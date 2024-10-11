@@ -8,3 +8,7 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "kv"
 id = "e213e1b199a340b297aced2040d09f0e"
+
+[[r2_buckets]]
+binding = 'bucket'
+bucket_name = 'bong-bong--webrtc-signal-store-bucket'
