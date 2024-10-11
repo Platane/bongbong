@@ -25,8 +25,11 @@ export const host = async (
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
     if (!candidate) return;
 
+    debug?.("got ice candidate");
+
     try {
-      await signalBroadcast(key, { type: "host-candidate", candidate });
+      debug?.("broadcasting ice candidate");
+      await signalBroadcast(key, { type: "guest-candidate", candidate });
     } catch (err) {
       console.error(err);
       debugger;
@@ -115,7 +118,10 @@ export const join = async (
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
     if (!candidate) return;
 
+    debug?.("got ice candidate");
+
     try {
+      debug?.("broadcasting ice candidate...");
       await signalBroadcast(key, { type: "guest-candidate", candidate });
     } catch (err) {
       console.error(err);
@@ -134,19 +140,25 @@ export const join = async (
       }
 
       if (message.type === "host-offer") {
-        debugger;
+        debug?.("setting remote offer...");
 
         const offer = new RTCSessionDescription(message.offer);
         await peerConnection.setRemoteDescription(offer);
 
-        while (pendingRemoteIceCandidate[0])
-          await peerConnection.addIceCandidate(
-            pendingRemoteIceCandidate.shift()!
-          );
+        debug?.(`got ${pendingRemoteIceCandidate.length} pending candidate`);
 
+        while (pendingRemoteIceCandidate[0]) {
+          const candidate = pendingRemoteIceCandidate.shift()!;
+
+          debug?.("adding ice candidate...");
+          await peerConnection.addIceCandidate(candidate);
+        }
+
+        debug?.("creating and setting local answer...");
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
 
+        debug?.("broadcasting answer...");
         await signalBroadcast(key, { type: "guest-answer", answer });
       }
     } catch (err) {
