@@ -1,18 +1,26 @@
 const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
 
-export const signalBroadcast = (
+export const signalBroadcast = async (
   key: string,
   data: any,
   { signal }: { signal?: AbortSignal } = {}
-) =>
-  fetch(STORE_URL + "/room/" + key, {
-    body: JSON.stringify(data),
-    method: "PUT",
-    signal,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then(assertOk);
+) => {
+  while (true) {
+    const res = await fetch(STORE_URL + "/room/" + key, {
+      body: JSON.stringify(data),
+      method: "PUT",
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.ok) return;
+
+    if (!(res.status === 409 && (await res.text()) === "concurrent write"))
+      throw await res.text().catch(() => res.statusText);
+  }
+};
 
 export const signalListen = (
   key: string,
@@ -50,7 +58,7 @@ export const signalListen = (
   return abortController.abort;
 };
 
-const assertOk = (res: Response) => {
-  if (!res.ok) throw res.text().catch(() => res.statusText);
+const assertOk = async (res: Response) => {
+  if (!res.ok) throw await res.text().catch(() => res.statusText);
   return res;
 };
