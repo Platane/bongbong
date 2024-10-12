@@ -4,7 +4,7 @@ import type { Game, Input } from "./game";
 import QRCode from "react-qr-code";
 import { buildRoute } from "./routes";
 import { tracks } from "./trackList";
-import { Track } from "../../Track/Track";
+import { Track } from "../Track/Track";
 import { Remote } from "./Remote";
 
 export const App = () => {
