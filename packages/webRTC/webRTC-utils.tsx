@@ -58,28 +58,43 @@ export const host = async (
 
   // listen to signaling server
   const pendingRemoteIceCandidate: RTCIceCandidateInit[] = [];
-  signalListen(key, async (message) => {
-    try {
-      if (message.type === "guest-candidate") {
-        if (!peerConnection.currentRemoteDescription)
-          pendingRemoteIceCandidate.push(message.candidate);
-        else await peerConnection.addIceCandidate(message.candidate);
-      }
-
-      if (message.type === "guest-answer") {
-        const answer = new RTCSessionDescription(message.answer);
-        await peerConnection.setRemoteDescription(answer);
-
-        while (pendingRemoteIceCandidate[0])
-          await peerConnection.addIceCandidate(
-            pendingRemoteIceCandidate.shift()!
-          );
-      }
-    } catch (err) {
-      console.error(err);
-      debugger;
+  let pollingDuration = 3000;
+  peerConnection.addEventListener("connectionstatechange", () => {
+    switch (peerConnection.connectionState) {
+      case "connecting":
+        pollingDuration = 3000;
+        break;
+      case "connected":
+        pollingDuration = 30000;
+        break;
     }
   });
+  signalListen(
+    key,
+    async (message) => {
+      try {
+        if (message.type === "guest-candidate") {
+          if (!peerConnection.currentRemoteDescription)
+            pendingRemoteIceCandidate.push(message.candidate);
+          else await peerConnection.addIceCandidate(message.candidate);
+        }
+
+        if (message.type === "guest-answer") {
+          const answer = new RTCSessionDescription(message.answer);
+          await peerConnection.setRemoteDescription(answer);
+
+          while (pendingRemoteIceCandidate[0])
+            await peerConnection.addIceCandidate(
+              pendingRemoteIceCandidate.shift()!
+            );
+        }
+      } catch (err) {
+        console.error(err);
+        debugger;
+      }
+    },
+    { pollingDuration: () => pollingDuration }
+  );
 
   const dataChannel = peerConnection.createDataChannel("MyApp Channel");
 
@@ -131,41 +146,56 @@ export const join = async (
 
   // listen to signaling server
   const pendingRemoteIceCandidate: RTCIceCandidateInit[] = [];
-  signalListen(key, async (message) => {
-    try {
-      if (message.type === "host-candidate") {
-        if (!peerConnection.currentRemoteDescription)
-          pendingRemoteIceCandidate.push(message.candidate);
-        else await peerConnection.addIceCandidate(message.candidate);
-      }
-
-      if (message.type === "host-offer") {
-        debug?.("setting remote offer...");
-
-        const offer = new RTCSessionDescription(message.offer);
-        await peerConnection.setRemoteDescription(offer);
-
-        debug?.(`got ${pendingRemoteIceCandidate.length} pending candidate`);
-
-        while (pendingRemoteIceCandidate[0]) {
-          const candidate = pendingRemoteIceCandidate.shift()!;
-
-          debug?.("adding ice candidate...");
-          await peerConnection.addIceCandidate(candidate);
-        }
-
-        debug?.("creating and setting local answer...");
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-
-        debug?.("broadcasting answer...");
-        await signalBroadcast(key, { type: "guest-answer", answer });
-      }
-    } catch (err) {
-      console.error(err);
-      debugger;
+  let pollingDuration = 3000;
+  peerConnection.addEventListener("connectionstatechange", () => {
+    switch (peerConnection.connectionState) {
+      case "connecting":
+        pollingDuration = 3000;
+        break;
+      case "connected":
+        pollingDuration = 30000;
+        break;
     }
   });
+  signalListen(
+    key,
+    async (message) => {
+      try {
+        if (message.type === "host-candidate") {
+          if (!peerConnection.currentRemoteDescription)
+            pendingRemoteIceCandidate.push(message.candidate);
+          else await peerConnection.addIceCandidate(message.candidate);
+        }
+
+        if (message.type === "host-offer") {
+          debug?.("setting remote offer...");
+
+          const offer = new RTCSessionDescription(message.offer);
+          await peerConnection.setRemoteDescription(offer);
+
+          debug?.(`got ${pendingRemoteIceCandidate.length} pending candidate`);
+
+          while (pendingRemoteIceCandidate[0]) {
+            const candidate = pendingRemoteIceCandidate.shift()!;
+
+            debug?.("adding ice candidate...");
+            await peerConnection.addIceCandidate(candidate);
+          }
+
+          debug?.("creating and setting local answer...");
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+
+          debug?.("broadcasting answer...");
+          await signalBroadcast(key, { type: "guest-answer", answer });
+        }
+      } catch (err) {
+        console.error(err);
+        debugger;
+      }
+    },
+    { pollingDuration: () => pollingDuration }
+  );
 
   const dataChannelPromise = new Promise<RTCDataChannel>((resolve) => {
     peerConnection.addEventListener("datachannel", (event) =>

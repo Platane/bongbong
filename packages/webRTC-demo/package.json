@@ -1,0 +1,17 @@
+{
+  "name": "@bongbong/webRTC-demo",
+  "author": {
+    "name": "platane"
+  },
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "qrcode": "1.5.4",
+    "@bongbong/webRTC": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.5",
+    "vite": "5.4.8"
+  }
+}
