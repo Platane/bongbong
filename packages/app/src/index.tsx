@@ -1,6 +1,5 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App/App";
 
 class ErrorBoundary extends React.Component<{ children: any }> {
   state: { error?: Error } = {};
@@ -17,8 +16,4 @@ class ErrorBoundary extends React.Component<{ children: any }> {
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
-root.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
+root.render(<ErrorBoundary>wip</ErrorBoundary>);
