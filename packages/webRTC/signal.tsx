@@ -58,7 +58,18 @@ export const signalListen = (
   return abortController.abort;
 };
 
-const assertOk = async (res: Response) => {
-  if (!res.ok) throw await res.text().catch(() => res.statusText);
-  return res;
+export const signalGet = async (
+  key: string,
+  { signal }: { signal?: AbortSignal } = {}
+) => {
+  const res = await fetch(STORE_URL + "/room/" + key, {
+    method: "GET",
+    signal,
+  });
+
+  if (res.ok) return await res.json();
+
+  if (res.status === 404) return null;
+
+  throw res.text().catch(() => res.statusText);
 };
