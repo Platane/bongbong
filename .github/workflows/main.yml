@@ -20,7 +20,7 @@ jobs:
 
       - run: cp packages/app/dist/index.html packages/app/dist/404.html
 
-      - run: bunx vite build --base /bongbong/
+      - run: bunx vite build --base /bongbong/webRTC-demo
         working-directory: packages/webRTC-demo
 
       - run: mv packages/webRTC-demo/dist packages/app/dist/webRTC-demo
