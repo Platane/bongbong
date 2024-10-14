@@ -1,8 +1,8 @@
 const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
 
-export const signalBroadcast = async (
+export const signalBroadcast = async <D,>(
   key: string,
-  data: any,
+  data: D,
   { signal }: { signal?: AbortSignal } = {}
 ) => {
   while (true) {
@@ -22,9 +22,9 @@ export const signalBroadcast = async (
   }
 };
 
-export const signalListen = (
+export const signalListen = <D,>(
   key: string,
-  onMessage: (data: any) => void,
+  onMessages: (data: D[]) => void,
   { pollingDuration = 5000 }: { pollingDuration?: number | (() => number) } = {}
 ) => {
   const abortController = new AbortController();
@@ -41,10 +41,8 @@ export const signalListen = (
 
     if (res.ok) {
       const list = await res.json();
-
-      for (; i < list.length; i++) {
-        onMessage(list[i]);
-      }
+      onMessages(list.slice(i));
+      i = list.length;
     } else if (res.status !== 404) throw res.text().catch(() => res.statusText);
 
     setTimeout(
@@ -58,7 +56,7 @@ export const signalListen = (
   return abortController.abort;
 };
 
-export const signalGet = async (
+export const signalGet = async <D,>(
   key: string,
   { signal }: { signal?: AbortSignal } = {}
 ) => {
@@ -67,7 +65,7 @@ export const signalGet = async (
     signal,
   });
 
-  if (res.ok) return await res.json();
+  if (res.ok) return (await res.json()) as D;
 
   if (res.status === 404) return null;
 
