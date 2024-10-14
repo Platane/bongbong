@@ -23,7 +23,7 @@ const rootElement = document.getElementById("root")!;
 
     dataChannelPromise = join(roomKey, {
       debug: (...a) => print("[debug]", ...a),
-    });
+    }).dataChannelPromise;
   }
 
   if (!joinKey) {
@@ -52,13 +52,29 @@ const rootElement = document.getElementById("root")!;
       anchorElement.innerText = "join room url";
       anchorElement.target = "_blank";
 
+      const copyButtonElement = document.createElement("button");
+      copyButtonElement.onclick = () => {
+        if (window.navigator?.clipboard?.writeText)
+          navigator.clipboard.writeText(joinUrl);
+
+        if (document.execCommand) {
+          const copyText = document.createElement("textarea");
+          copyText.innerText = joinUrl;
+          copyText.select();
+
+          document.execCommand("copy");
+        }
+      };
+      copyButtonElement.innerText = "copy";
+
       rootElement.appendChild(qrCodeImageElement);
       rootElement.appendChild(anchorElement);
+      rootElement.appendChild(copyButtonElement);
     }
 
     dataChannelPromise = host(roomKey, {
       debug: (...a) => print("[debug]", ...a),
-    });
+    }).dataChannelPromise;
   }
 
   dataChannelPromise?.then(async (dataChannel) => {
@@ -74,6 +90,9 @@ const rootElement = document.getElementById("root")!;
           );
       }
     });
+
+    dataChannel.addEventListener("error", () => console.log("channel error"));
+    dataChannel.addEventListener("close", () => console.log("channel closed"));
 
     while (true) {
       dataChannel.send(JSON.stringify({ timestamp: Date.now(), type: "ping" }));
