@@ -10,29 +10,45 @@ type Message =
   | { type: "guest-answer"; slot: string; answer: any }
   | { type: "guest-candidate"; slot: string; candidate: any };
 
-export const host = (
-  key: string,
-  {
-    debug,
-    signal,
-  }: { signal?: AbortSignal; debug?: (...args: any[]) => void } = {}
-) => {
+export type Pipe = {
+  send: RTCDataChannel["send"];
+  dispose: () => void;
+  readyPromise: Promise<void>;
+  errorPromise: Promise<void>;
+  subscribeToMessage: (h: (data: any) => void) => () => void;
+};
+
+export const host = (key: string): Pipe => {
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
-  let resolve: (d: RTCDataChannel) => void;
-  let reject: (error: Error) => void;
-  let dataChannelPromise = new Promise<RTCDataChannel>((r, s) => {
-    resolve = r;
-    reject = s;
+  const dataChannel = peerConnection.createDataChannel("Data Channel");
+
+  // error promise
+  let reportError: (error?: any) => void;
+  let errorPromise = new Promise<void>((_, r) => (reportError = r));
+
+  // ready promise
+  let resolveReady: () => void;
+  let readyPromise = new Promise<void>((r) => (resolveReady = r));
+
+  // attach error event
+  dataChannel.addEventListener("close", (event) => reportError());
+  dataChannel.addEventListener("error", (event) => reportError());
+
+  peerConnection.addEventListener("connectionstatechange", () => {
+    if (
+      peerConnection.connectionState === "closed" ||
+      peerConnection.connectionState === "disconnected" ||
+      peerConnection.connectionState === "failed"
+    ) {
+      reportError();
+    }
   });
 
-  // report connection status
-  peerConnection.addEventListener("connectionstatechange", () =>
-    debug?.("connection status", peerConnection.connectionState)
-  );
+  signalBroadcast(key, {});
 
-  // clean up on abort
-  signal?.addEventListener("abort", () => peerConnection.close());
+  // attach ready event
+  dataChannel.addEventListener("open", () => resolveReady());
 
   const slot = Math.random().toString().slice(2);
 
@@ -40,271 +56,216 @@ export const host = (
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
     if (!candidate) return;
 
-    debug?.("got ice candidate");
-
-    debug?.("broadcasting ice candidate...");
-
-    try {
-      await signalBroadcast<Message>(key, {
-        type: "host-candidate",
-        slot,
-        candidate,
-      });
-    } catch (err: any) {
-      reject(err);
-    }
+    signalBroadcast<Message>(key, {
+      type: "host-candidate",
+      slot,
+      candidate,
+    }).catch(reportError);
   });
 
   // broadcast offer
-  let currentOfferGeneration = 1;
-  peerConnection.addEventListener("negotiationneeded", async (event) => {
-    currentOfferGeneration++;
-    const generation = currentOfferGeneration;
-
-    try {
-      debug?.("creating offer...");
-
-      const offer = await peerConnection.createOffer();
-
-      if (generation !== currentOfferGeneration) return;
-
-      debug?.("setting local description");
-
+  peerConnection
+    .createOffer()
+    .then(async (offer) => {
       await peerConnection.setLocalDescription(offer);
 
-      debug?.("broadcasting new offer");
       await signalBroadcast<Message>(key, { type: "host-offer", slot, offer });
-    } catch (err: any) {
-      reject(err);
+    })
+    .catch((err) => reportError(err));
+
+  // listen to signaling server
+
+  // dynamic polling duration
+  let pollingDuration = 3000;
+  peerConnection.addEventListener("connectionstatechange", () => {
+    switch (peerConnection.connectionState) {
+      case "connecting":
+      case "new":
+        pollingDuration = 3000;
+        break;
+      case "connected":
+        pollingDuration = 30000;
+        break;
+      default:
+        pollingDuration = 3000000;
+        break;
     }
   });
 
-  // listen to signaling server
-  {
-    const pendingRemoteIceCandidate: RTCIceCandidateInit[] = [];
+  const toReplayMessages: Message[] = [];
+  const onMessage = (message: Message) => {
+    if (message.slot !== slot) return;
 
-    // dynamic polling duration
-    let pollingDuration = 3000;
-    peerConnection.addEventListener("connectionstatechange", () => {
-      switch (peerConnection.connectionState) {
-        case "connecting":
-        case "new":
-          pollingDuration = 3000;
-          break;
-        case "connected":
-          pollingDuration = 30000;
-          break;
-        case "closed":
-        case "disconnected":
-        case "failed":
-          pollingDuration = 3000000;
-          break;
-      }
-    });
-    const unsubscribe = signalListen<Message>(
-      key,
-      async (messages) => {
-        try {
-          for (const message of messages) {
-            if (message.slot !== slot) continue;
+    if (
+      message.type === "guest-candidate" &&
+      peerConnection.currentRemoteDescription
+    )
+      peerConnection.addIceCandidate(message.candidate).catch(reportError);
+    else if (
+      message.type === "guest-answer" &&
+      !peerConnection.currentRemoteDescription &&
+      !peerConnection.pendingRemoteDescription
+    ) {
+      const answer = new RTCSessionDescription(message.answer);
+      peerConnection
+        .setRemoteDescription(answer)
+        .then(() => {
+          // replay
+          const clone = [...toReplayMessages];
+          toReplayMessages.length = 0;
+          clone.forEach(onMessage);
+        })
+        .catch(reportError);
+    } else toReplayMessages.push(message);
+  };
 
-            if (message.type === "guest-candidate") {
-              if (!peerConnection.currentRemoteDescription)
-                pendingRemoteIceCandidate.push(message.candidate);
-              else await peerConnection.addIceCandidate(message.candidate);
-            }
-
-            if (
-              message.type === "guest-answer" &&
-              !peerConnection.currentRemoteDescription
-            ) {
-              const answer = new RTCSessionDescription(message.answer);
-              await peerConnection.setRemoteDescription(answer);
-
-              while (pendingRemoteIceCandidate[0])
-                await peerConnection.addIceCandidate(
-                  pendingRemoteIceCandidate.shift()!
-                );
-            }
-          }
-        } catch (err: any) {
-          reject(err);
-        }
-      },
-      { pollingDuration: () => pollingDuration }
-    );
-
-    signal?.addEventListener("abort", unsubscribe);
-  }
-
-  const dataChannel = peerConnection.createDataChannel("MyApp Channel");
-
-  dataChannel.addEventListener("error", (event) =>
-    reject(new Error("error while opening channel"))
+  const unsubscribe = signalListen<Message>(
+    key,
+    (messages) => messages.forEach(onMessage),
+    { pollingDuration: () => pollingDuration }
   );
 
-  dataChannel.addEventListener("open", () => resolve(dataChannel));
+  return {
+    readyPromise: Promise.race([readyPromise, errorPromise]),
+    errorPromise,
+    send: (data) => dataChannel.send(data as any),
+    dispose: () => {
+      peerConnection.close();
+      unsubscribe();
+    },
+    subscribeToMessage: (h) => {
+      const mh = (event: any) => h(event.data);
 
-  return { peerConnection, dataChannelPromise };
+      dataChannel.addEventListener("message", mh);
+      return () => dataChannel.removeEventListener("message", mh);
+    },
+  };
 };
 
 export const join = (
   key: string,
-  {
-    debug,
-    signal,
-  }: { signal?: AbortSignal; debug?: (...args: any[]) => void } = {}
-) => {
+  usedSlots: Pick<Set<string>, "has" | "add">
+): Pipe => {
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
-  let resolve: (d: RTCDataChannel) => void;
-  let reject: (error: Error) => void;
-  let dataChannelPromise = new Promise<RTCDataChannel>((r, s) => {
-    resolve = r;
-    reject = s;
+  const messageListeners = new Set<(data: any) => void>();
+
+  // error promise
+  let reportError: (error?: any) => void;
+  let errorPromise = new Promise<void>((_, r) => (reportError = r));
+
+  // ready promise
+  let resolveReady: () => void;
+  let readyPromise = new Promise<void>((r) => (resolveReady = r));
+
+  let timeout: Timer | undefined;
+
+  peerConnection.addEventListener("connectionstatechange", () => {
+    if (
+      peerConnection.connectionState === "closed" ||
+      peerConnection.connectionState === "disconnected" ||
+      peerConnection.connectionState === "failed"
+    ) {
+      reportError();
+    }
+
+    if (peerConnection.connectionState === "connected") clearTimeout(timeout);
   });
 
   let slot: string | undefined;
 
-  // report connection status
-  peerConnection.addEventListener("connectionstatechange", () =>
-    debug?.("connection status", peerConnection.connectionState)
-  );
-
-  // clean up on abort
-  signal?.addEventListener("abort", () => peerConnection.close());
+  const iceCandidates = new Set<RTCIceCandidate>();
 
   // broadcast ice candidate
-  const pendingLocalIceCandidate: RTCIceCandidateInit[] = [];
-
-  const pendingRemoteIceCandidate: RTCIceCandidateInit[] = [];
-
-  let postConnectionTimeout: Timer | undefined;
-  peerConnection.addEventListener("connectionstatechange", () => {
-    if (peerConnection.connectionState === "connected")
-      clearTimeout(postConnectionTimeout);
-  });
-
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
     if (!candidate) return;
 
-    debug?.("got ice candidate");
-
-    if (!slot) {
-      pendingLocalIceCandidate.push(candidate);
-
-      return;
-    }
-
-    try {
-      debug?.("broadcasting ice candidate...");
-      await signalBroadcast<Message>(key, {
+    if (!slot) iceCandidates.add(candidate);
+    else
+      signalBroadcast<Message>(key, {
         type: "guest-candidate",
         slot,
         candidate,
-      });
-    } catch (err) {
-      console.error(err);
-      debugger;
-    }
+      }).catch(reportError);
   });
 
-  // listen to signaling server
-  {
-    const messagesToReplay: Extract<Message, { type: "host-candidate" }>[] = [];
+  const toReplayMessages: Message[] = [];
+  const onMessage = (message: Message) => {
+    if (
+      message.type === "host-candidate" &&
+      message.slot === slot &&
+      peerConnection.currentRemoteDescription
+    )
+      peerConnection.addIceCandidate(message.candidate).catch(reportError);
+    else if (
+      message.type === "host-offer" &&
+      !peerConnection.currentRemoteDescription &&
+      !usedSlots.has(message.slot)
+    ) {
+      slot = message.slot;
 
-    const availableOffers: {
-      offer: RTCSessionDescriptionInit;
-      slot: string;
-    }[] = [];
+      peerConnection
+        .setRemoteDescription(new RTCSessionDescription(message.offer))
+        .then(async () => {
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
 
-    const tryOffer = async () => {
-      if (slot) return;
+          // replay
+          const clone = [...toReplayMessages];
+          toReplayMessages.length = 0;
+          clone.forEach(onMessage);
 
-      const a = availableOffers.shift();
-      if (!a) return;
+          await signalBroadcast(key, { type: "guest-answer", slot, answer });
+        })
+        .catch(reportError);
+    } else toReplayMessages.push(message);
+  };
 
-      debug?.("found available offer");
+  const onMessages = (messages: Message[]) => {
+    debugger;
 
-      debug?.("setting remote description");
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(a.offer)
-      );
+    for (const message of messages) {
+      if (message.type === "guest-answer") usedSlots.add(message.slot);
+    }
 
-      slot = a.slot;
-      onMessage(messagesToReplay);
+    for (const message of messages) onMessage(message);
+  };
 
-      while (pendingLocalIceCandidate[0]) {
-        debug?.("broadcasting local pending ice candidate...");
-        await signalBroadcast<Message>(key, {
-          type: "guest-candidate",
-          candidate: pendingRemoteIceCandidate.shift(),
-          slot,
-        });
-      }
+  let pollingDuration = 3000;
 
-      debug?.("creating answer");
-      const answer = await peerConnection.createAnswer();
+  const unsubscribe = signalListen<Message>(key, onMessages, {
+    pollingDuration: () => pollingDuration,
+  });
 
-      debug?.("setting local description");
-      await peerConnection.setLocalDescription(answer);
-
-      debug?.("broadcasting answer");
-      await signalBroadcast(key, { type: "guest-answer", slot, answer });
-
-      postConnectionTimeout = setTimeout(() => {
-        debug?.("no connection after X second, it failed");
-
-        peerConnection.restartIce();
-        slot = undefined;
-
-        tryOffer();
-      }, 6000);
-    };
-
-    const onMessage = async (messages: Message[]) => {
-      try {
-        for (const message of messages) {
-          if (message.type === "host-offer") availableOffers.push(message);
-
-          if (message.type === "guest-answer") {
-            const i = availableOffers.findIndex((a) => a.slot === message.slot);
-            if (i > -1) availableOffers.splice(i, 1);
-          }
-
-          if (message.type === "host-candidate" && message.slot === slot) {
-            await peerConnection.addIceCandidate(message.candidate);
-          } else if (message.type === "host-candidate") {
-            messagesToReplay.push(message);
-          }
-        }
-
-        if (!slot) debug?.("no available offer, waiting...");
-      } catch (err: any) {
-        reject(err);
-      }
-
-      tryOffer();
-    };
-
-    // dynamic polling duration
-    let pollingDuration = 3000;
-    const unsubscribe = signalListen<Message>(key, onMessage, {
-      pollingDuration: () => pollingDuration,
-    });
-
-    signal?.addEventListener("abort", unsubscribe);
-  }
+  let dataChannel: RTCDataChannel | undefined;
 
   peerConnection.addEventListener("datachannel", (event) => {
-    if (event.channel.readyState === "open") resolve(event.channel);
+    dataChannel = event.channel;
 
-    event.channel.addEventListener("error", (event) =>
-      reject(new Error("error while opening channel"))
-    );
+    if (dataChannel.readyState === "open") resolveReady();
 
-    event.channel.addEventListener("open", () => resolve(event.channel));
+    dataChannel.addEventListener("close", reportError);
+    dataChannel.addEventListener("error", reportError);
+    dataChannel.addEventListener("open", resolveReady);
+    dataChannel.addEventListener("message", (event) => {
+      for (const h of messageListeners) h(event.data);
+    });
   });
 
-  return { peerConnection, dataChannelPromise };
+  return {
+    send: (data) => {
+      if (!dataChannel) throw new Error("dataChannel not ready");
+      dataChannel.send(data as any);
+    },
+    readyPromise: Promise.race([readyPromise, errorPromise]),
+    errorPromise,
+    dispose: () => {
+      peerConnection.close();
+      unsubscribe();
+    },
+    subscribeToMessage: (h) => {
+      messageListeners.add(h);
+      return () => messageListeners.delete(h);
+    },
+  };
 };
