@@ -96,6 +96,9 @@ if (!joinKey) {
 
   //
 
+  // very hacky way to mitigate race condition on first write
+  signalBroadcast(roomKey, {});
+
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
   peerConnection.addEventListener("connectionstatechange", () =>

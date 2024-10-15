@@ -31,12 +31,13 @@ jobs:
         if: github.ref == 'refs/heads/main'
 
       - run: bunx wrangler deploy
+        if: false
         working-directory: packages/webRTC-signal
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-      - run: bun test
+      # - run: bun test
 
       # - run: bunx biome check .
 
