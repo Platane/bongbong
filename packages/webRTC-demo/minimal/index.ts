@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { signalBroadcast, signalListen } from "@bongbong/webRTC/signal";
+import readmeContent from "./README.md?raw";
 
 ///
 /// some html elements
@@ -8,6 +9,10 @@ const logElement = document.getElementById("log")!;
 const print = (...args: any[]) =>
   (logElement.innerText += args.join(" ") + "\n");
 const rootElement = document.getElementById("root")!;
+
+const readmeElement = document.createElement("pre");
+readmeElement.innerText = readmeContent;
+rootElement.appendChild(readmeElement);
 
 const renderGuest = (roomKey: string) => {
   const h1Element = document.createElement("h1");
