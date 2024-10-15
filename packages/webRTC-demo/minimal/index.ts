@@ -26,6 +26,7 @@ const renderHost = (roomKey: string) => {
   qrCodeImageElement.width = 256;
   qrCodeImageElement.height = 256;
   qrCodeImageElement.style.imageRendering = "pixelated";
+  qrCodeImageElement.style.display = "block";
   QRCode.toDataURL(joinUrl, { margin: 0, width: 256 }, (error, url) => {
     qrCodeImageElement.src = url;
   });
@@ -83,21 +84,12 @@ type SignalMessage =
   | { type: "guest-answer"; answer: RTCSessionDescriptionInit }
   | { type: "guest-candidate"; candidate: RTCIceCandidate };
 
-if (!joinKey) {
-  //
-  //
-  // host mode
-  //
-  //
-
-  const roomKey = Math.random().toString(36).slice(2);
-
-  renderHost(roomKey);
-
-  //
-
+/**
+ * host mode
+ */
+const host = async (roomKey: string) => {
   // very hacky way to mitigate race condition on first write
-  signalBroadcast(roomKey, {});
+  await signalBroadcast(roomKey, {});
 
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
@@ -162,33 +154,22 @@ if (!joinKey) {
   });
 
   // creating offer
-  (async () => {
-    console.log(
-      "creating offer, setting as local description and broadcasting it"
-    );
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
+  console.log(
+    "creating offer, setting as local description and broadcasting it"
+  );
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
 
-    await signalBroadcast<SignalMessage>(roomKey, {
-      type: "host-offer",
-      offer,
-    });
-  })();
-}
+  await signalBroadcast<SignalMessage>(roomKey, {
+    type: "host-offer",
+    offer,
+  });
+};
 
-if (joinKey) {
-  //
-  //
-  // guest mode
-  //
-  //
-
-  const roomKey = joinKey;
-
-  renderGuest(roomKey);
-
-  //
-
+/**
+ * guest mode
+ */
+const join = async (roomKey: string) => {
   const peerConnection = new RTCPeerConnection(rtcConfiguration);
 
   peerConnection.addEventListener("connectionstatechange", () =>
@@ -266,4 +247,18 @@ if (joinKey) {
     messages.push(...ms);
     for (const m of ms) await onMessage(m);
   });
+};
+
+if (!joinKey) {
+  const roomKey = Math.random().toString(36).slice(2);
+
+  renderHost(roomKey);
+
+  host(roomKey);
+}
+
+if (joinKey) {
+  renderGuest(joinKey);
+
+  join(joinKey);
 }
