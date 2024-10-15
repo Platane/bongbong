@@ -5,10 +5,22 @@ import type {
 } from "@cloudflare/workers-types";
 
 const cors =
-  <A extends Array<any>>(f: (...args: A) => Response | Promise<Response>) =>
-  async (...args: A) => {
-    const res = await f(...args);
-    res.headers.set("Access-Control-Allow-Origin", "*");
+  <Req extends { url: string }, A extends Array<any>>(
+    f: (req: Req, ...args: A) => Response | Promise<Response>
+  ) =>
+  async (req: Req, ...args: A) => {
+    const res = await f(req, ...args);
+
+    const { origin, host } = new URL(req.url);
+
+    if (
+      host === "localhost" ||
+      origin === "platane.github.io" ||
+      origin === "platane.me" ||
+      origin.endsWith(".platane.me")
+    )
+      res.headers.set("Access-Control-Allow-Origin", origin);
+
     res.headers.set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
     res.headers.set("Access-Control-Allow-Headers", "Content-Type");
     return res;
