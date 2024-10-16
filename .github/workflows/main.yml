@@ -30,8 +30,15 @@ jobs:
       - uses: actions/deploy-pages@v4
         if: github.ref == 'refs/heads/main'
 
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            webRTC-signal:
+              - 'packages/webRTC-signal/**'
+
       - run: bunx wrangler deploy
-        if: false
+        if: steps.changes.outputs.webRTC-signal == 'true'
         working-directory: packages/webRTC-signal
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
