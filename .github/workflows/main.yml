@@ -38,7 +38,7 @@ jobs:
               - 'packages/webRTC-signal/**'
 
       - run: bunx wrangler deploy
-        if: steps.changes.outputs.webRTC-signal == 'true'
+        if: steps.changes.outputs.webRTC-signal == 'true' && github.ref == 'refs/heads/main'
         working-directory: packages/webRTC-signal
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
