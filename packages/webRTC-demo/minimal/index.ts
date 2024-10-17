@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { signalBroadcast, signalListen } from "@bongbong/webRTC/signal";
 import readmeContent from "./README.md?raw";
+import { rtcConfiguration } from "@bongbong/webRTC/webRTC.configuration";
 
 ///
 /// some html elements
@@ -79,10 +80,6 @@ const initializeDataChannel = (dataChannel: RTCDataChannel) => {
 
 const joinKey = window.location.hash.slice(1);
 
-const rtcConfiguration: RTCConfiguration = {
-  iceServers: [{ urls: "stun:stun.mystunserver.tld" }],
-};
-
 type SignalMessage =
   | { type: "host-offer"; offer: RTCSessionDescriptionInit }
   | { type: "host-candidate"; candidate: RTCIceCandidate }
@@ -100,6 +97,9 @@ const host = async (roomKey: string) => {
 
   peerConnection.addEventListener("connectionstatechange", () =>
     console.log("peerConnection status:", peerConnection.connectionState)
+  );
+  peerConnection.addEventListener("icecandidateerror", () =>
+    console.log("icecandidateerror:")
   );
 
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
@@ -179,6 +179,9 @@ const join = async (roomKey: string) => {
 
   peerConnection.addEventListener("connectionstatechange", () =>
     console.log("peerConnection status:", peerConnection.connectionState)
+  );
+  peerConnection.addEventListener("icecandidateerror", () =>
+    console.log("icecandidateerror:")
   );
 
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
@@ -267,3 +270,5 @@ if (joinKey) {
 
   join(joinKey);
 }
+
+document.unca;

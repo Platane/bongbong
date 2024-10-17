@@ -4,6 +4,9 @@ import type {
   ExportedHandler,
 } from "@cloudflare/workers-types";
 
+/*
+ * middleware to append access control related headers to the response
+ */
 const cors =
   <A extends Array<any>>(
     f: (req: Request, ...args: A) => Response | Promise<Response>
