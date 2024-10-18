@@ -16,6 +16,7 @@ export const createHostState = (roomKey: string) => {
     const remotes = host.getGuests().map((id) => ({
       id,
       hand: "right" as Hand,
+      ping: 10,
       ...state.remotes.find((r) => r.id === id),
     }));
 
@@ -42,6 +43,12 @@ export const createHostState = (roomKey: string) => {
       const ping = Date.now() - data.requestLocalDate;
       const delta = Date.now() - (data.answerRemoteDate - ping / 2);
       remotePing.set(data.sender, { delta, ping });
+
+      const remotes = state.remotes.map((r) =>
+        r.id === data.sender ? { ...r, ping: Math.ceil(ping / 2) } : r
+      );
+      state = { ...state, remotes };
+      broadcastStateChange();
     }
 
     if (data.type === "remote-description") {
@@ -76,7 +83,7 @@ export const createHostState = (roomKey: string) => {
   });
 
   type State = {
-    remotes: { id: string; hand: Hand }[];
+    remotes: { id: string; hand: Hand; ping: number }[];
     game: Game | undefined;
   };
 
