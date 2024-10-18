@@ -10,9 +10,7 @@ export const signalBroadcast = async <D,>(
       body: JSON.stringify(data),
       method: "PUT",
       signal,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
 
     if (res.ok) return;
@@ -31,15 +29,23 @@ export const signalListen = <D,>(
 
   let i = 0;
 
+  let lastModifiedDate: string | null = null;
+
   const loop = async () => {
     if (abortController.signal.aborted) return;
 
     const res = await fetch(STORE_URL + "/room/" + key, {
       method: "GET",
       signal: abortController.signal,
+      headers: {
+        ...(lastModifiedDate ? { "If-Modified-Since": lastModifiedDate } : {}),
+      },
     });
 
-    if (res.ok) {
+    if (res.status === 304) {
+      //
+    } else if (res.ok) {
+      lastModifiedDate = res.headers.get("Last-Modified");
       const list = await res.json();
       onMessages(list.slice(i));
       i = list.length;
