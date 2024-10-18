@@ -29,7 +29,10 @@ const cors =
     }
 
     res.headers.set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
-    res.headers.set("Access-Control-Allow-Headers", "Content-Type");
+    res.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, If-Modified-Since"
+    );
     return res;
   };
 
@@ -42,10 +45,29 @@ export default {
     if (key && req.method === "GET") {
       const value = await bucket.get(key);
 
-      if (value)
+      if (value) {
+        // exception for the header If-Modified-Since
+        {
+          const ifModifierSince = req.headers.get("If-Modified-Since");
+
+          if (
+            ifModifierSince &&
+            new Date(value.uploaded.toUTCString()).getTime() <=
+              new Date(ifModifierSince).getTime()
+          )
+            return new Response("", {
+              status: 304,
+              headers: { "Last-Modified": value.uploaded.toUTCString() },
+            });
+        }
+
         return new Response(await value.arrayBuffer(), {
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Last-Modified": value.uploaded.toUTCString(),
+          },
         });
+      }
 
       return new Response("no value for this key", { status: 404 });
     }
