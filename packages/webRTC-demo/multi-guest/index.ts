@@ -64,9 +64,9 @@ if (!joinKey) {
 
   const host = createHost(roomKey);
 
-  console.log("list of guests: [ " + host.getGuests().join(", ") + " ]");
+  console.log("list of guests: [" + host.getGuests().join(", ") + "]");
   host.subscribeToGuestChange(() => {
-    console.log("list of guests: [ " + host.getGuests().join(", ") + " ]");
+    console.log("list of guests: [" + host.getGuests().join(", ") + "]");
   });
 
   setInterval(() => {
