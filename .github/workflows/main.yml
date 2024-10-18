@@ -23,8 +23,8 @@ jobs:
       - run: bunx vite build --base /bongbong/webRTC-minimal-demo --outDir ../../app/dist/webRTC-minimal-demo --minify false
         working-directory: packages/webRTC-demo/minimal
 
-      - run: bunx vite build --base /bongbong/webRTC-multi-host-demo --outDir ../../app/dist/webRTC-multi-host-demo --minify false
-        working-directory: packages/webRTC-demo/multi-host
+      - run: bunx vite build --base /bongbong/webRTC-multi-guest-demo --outDir ../../app/dist/webRTC-multi-guest-demo --minify false
+        working-directory: packages/webRTC-demo/multi-guest
 
       - uses: actions/upload-pages-artifact@v3
         with:
