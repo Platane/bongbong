@@ -1,6 +1,8 @@
 export type InputKind = "ring" | "skin";
 
-export type Input = { time: number; kind: InputKind; hand: "left" | "right" };
+export type Hand = "left" | "right";
+
+export type Input = { time: number; kind: InputKind; hand: Hand };
 
 export type Note =
   | { kind: "ring" | "skin"; time: number }
@@ -8,29 +10,17 @@ export type Note =
 
 export type Partition = Note[];
 
+export type Track = {
+  title: string;
+  audio: HTMLAudioElement;
+  bpm: number;
+  offset: number;
+  partition: Partition;
+};
+
 export type Game = {
-  track: {
-    title: string;
-    audio: HTMLAudioElement;
-    bpm: number;
-    offset: number;
-    partition: Partition;
-  };
-  trackStartedDate: number;
+  track: Track;
   inputs: Input[];
 };
 
 export const isInput = (x: any): x is Input => x && typeof x.time === "number";
-
-export const registerInput = (game: Game, input: Input) => ({
-  ...game,
-  inputs: [...game.inputs, input],
-});
-
-export const createInitialGame = (
-  track: Game["track"],
-  goals: Game["goals"],
-  trackStartedDate: number
-): Game => {
-  return { track, goals, trackStartedDate, inputs: [] };
-};

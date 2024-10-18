@@ -10,7 +10,7 @@ type Message = Pipe_SignalMessage & { slot: string };
 
 export const createHost = <
   InMessage extends {} = any,
-  OutMessage extends {} = any
+  OutMessage extends {} = InMessage
 >(
   roomKey: string
 ) => {
@@ -130,7 +130,7 @@ export const createHost = <
 
 export const createGuest = <
   InMessage extends {} = any,
-  OutMessage extends {} = any
+  OutMessage extends {} = InMessage
 >(
   roomKey: string
 ) => {

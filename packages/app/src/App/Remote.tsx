@@ -1,16 +1,19 @@
 import * as React from "react";
+import { useGuestState } from "./useState";
 
-export const Remote = ({
-  hand,
-  inputRemote,
-  switchHand,
-  markRemoteUnsupported,
-}: {
-  hand: "left" | "right";
-  inputRemote: (kind: "ring" | "skin") => void;
-  switchHand: (hand: "left" | "right") => void;
-  markRemoteUnsupported: () => void;
-}) => {
+export const Remote = ({ roomId }: { roomId: string }) => {
+  const state = useGuestState(roomId);
+
+  const { inputRemote, setRemoteDescription } = state;
+  const hand = state.description.hand;
+  const markRemoteUnsupported = () => {
+    // alert("unsupported");
+  };
+
+  React.useEffect(() => {
+    setRemoteDescription(hand);
+  }, [state.connectionStatus]);
+
   const [history, setHistory] = React.useState(
     [] as {
       alpha: number;
@@ -95,7 +98,7 @@ export const Remote = ({
           name="hand"
           value="left"
           checked={hand === "left"}
-          onChange={(e) => e.target.checked && switchHand("left")}
+          onChange={(e) => e.target.checked && setRemoteDescription("left")}
         />
         <label htmlFor="hand-left">left</label>
 
@@ -105,7 +108,7 @@ export const Remote = ({
           name="hand"
           value="right"
           checked={hand === "right"}
-          onChange={(e) => e.target.checked && switchHand("right")}
+          onChange={(e) => e.target.checked && setRemoteDescription("right")}
         />
         <label htmlFor="hand-right">right</label>
       </div>
@@ -166,6 +169,8 @@ export const Remote = ({
           );
         })}
       </svg>
+
+      <pre>{JSON.stringify({ roomId, ...state }, null, 2)}</pre>
     </>
   );
 };

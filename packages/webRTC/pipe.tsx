@@ -189,7 +189,7 @@ export const join = (signalingChannel: SignalingChannel): Pipe => {
           reportError(
             new Error("timeout while waiting for host to accept answer")
           ),
-        5 * 1000
+        8 * 1000
       );
     }
   });
