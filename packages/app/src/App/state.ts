@@ -54,7 +54,7 @@ export const createHostState = (roomKey: string) => {
 
     if (data.type === "remote-input") {
       const { delta, ping } = remotePing.get(data.sender) ?? {
-        ping: 0,
+        ping: 60,
         delta: 0,
       };
 
