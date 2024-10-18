@@ -20,10 +20,10 @@ jobs:
 
       - run: cp packages/app/dist/index.html packages/app/dist/404.html
 
-      - run: bunx vite build --base /bongbong/webRTC-minimal-demo --outDir ../../app/dist/webRTC-minimal-demo --minify false
+      - run: bunx vite build --base /bongbong/webRTC-minimal-demo --outDir ../../app/dist/demo/webRTC-minimal --minify false
         working-directory: packages/webRTC-demo/minimal
 
-      - run: bunx vite build --base /bongbong/webRTC-multi-guest-demo --outDir ../../app/dist/webRTC-multi-guest-demo --minify false
+      - run: bunx vite build --base /bongbong/webRTC-multi-guest-demo --outDir ../../app/dist/demo/webRTC-multi-guest --minify false
         working-directory: packages/webRTC-demo/multi-guest
 
       - uses: actions/upload-pages-artifact@v3
