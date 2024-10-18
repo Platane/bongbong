@@ -1,7 +1,7 @@
 import React from "react";
 import { Game } from "../src/App/game";
 
-export const Track = ({ track, inputs }: Game & {}) => {
+export const PlayTrack = ({ track, inputs }: Game & {}) => {
   const [, refresh] = React.useReducer((x) => 1 + x, 1);
   React.useEffect(() => {
     let cancel: number;
