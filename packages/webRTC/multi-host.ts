@@ -134,8 +134,6 @@ export const createGuest = <
 >(
   roomKey: string
 ) => {
-  let pollingDuration = 3000;
-
   const messageListeners = new Set<(data: InMessage) => void>();
 
   let activePipe:
@@ -152,6 +150,12 @@ export const createGuest = <
   const usedSlots = new Set<string>();
 
   const statusListeners = new Set<() => void>();
+
+  // dynamic polling duration
+  let pollingDuration = 2000;
+  statusListeners.add(() => {
+    pollingDuration = (activePipe?.status === "connected" && 30 * 1000) || 2000;
+  });
 
   const onMessage = (ms: Message[]) => {
     if (activePipe) {
