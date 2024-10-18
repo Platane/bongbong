@@ -145,7 +145,7 @@ export const join = (signalingChannel: SignalingChannel): Pipe => {
     if (!candidate) return;
 
     signalingChannel
-      .broadcast({ type: "host-candidate", candidate })
+      .broadcast({ type: "guest-candidate", candidate })
       .catch(reportError);
   });
 
