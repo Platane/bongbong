@@ -64,7 +64,7 @@ const Remote = ({ remote }: { remote: HostState["remotes"][number] }) => {
         strokeWidth={0.006}
       />
 
-      <line x1={0} x2={0} y1="-1" y2="1" stroke="grey" strokeWidth={0.01} />
+      <line x1={0} x2={0} y1="-1" y2="1" stroke="grey" strokeWidth={0.005} />
 
       <text x={0.25} y={1} style={{ fontSize: 0.2 }}>
         {Math.ceil(remote.ping / 2)}ms
@@ -82,7 +82,7 @@ const Remote = ({ remote }: { remote: HostState["remotes"][number] }) => {
             })
             .join(" ")
         }
-        strokeWidth={0.01}
+        strokeWidth={0.005}
         stroke="blue"
         fill="none"
       />
