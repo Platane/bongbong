@@ -9,9 +9,10 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
 
   const u = new URL(request.url);
   u.pathname = "/api" + u.pathname;
-  request.url = u.toString();
 
-  console.log(u, request.url);
+  const redirect = new Request(u.toString(), request);
 
-  return out.fetch(request, env);
+  console.log(u, redirect.url);
+
+  return out.fetch(redirect, env);
 };
