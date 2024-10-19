@@ -90,6 +90,8 @@ export const Remote = ({ roomId }: { roomId: string }) => {
 
   return (
     <>
+      <h1>{roomId}</h1>
+
       <button onClick={() => inputRemote("ring")}>ring</button>
       <button onClick={() => inputRemote("skin")}>skin</button>
 
