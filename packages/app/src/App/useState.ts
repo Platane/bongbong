@@ -1,5 +1,6 @@
 import * as React from "react";
-import { createGuestState, createHostState } from "./state";
+import { createHostState } from "../state/hostState";
+import { createGuestState } from "../state/guestState";
 
 export const useHostState = (roomKey: string) => {
   const { getState, subscribe, dispose, ...methods } = React.useMemo(
