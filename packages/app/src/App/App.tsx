@@ -30,7 +30,7 @@ const Home = ({ createRoom }: { createRoom: () => void }) => (
 const generateId = () =>
   Math.random()
     .toString(36)
-    .slice(2, 7)
+    .slice(2, 6)
     .split("")
     .map((c) => (Math.random() > 0.5 ? c.toUpperCase() : c))
     .join("");
