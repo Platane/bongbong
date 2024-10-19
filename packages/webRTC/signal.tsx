@@ -1,6 +1,5 @@
 // const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
-// const STORE_URL = location.origin + "/signal";
-const STORE_URL = "https://bongbong-ck3.pages.dev/signal";
+const STORE_URL = location.origin + "/signal";
 
 export const signalBroadcast = async <D,>(
   key: string,
