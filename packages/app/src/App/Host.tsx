@@ -47,13 +47,12 @@ const Remote = ({ remote }: { remote: HostState["remotes"][number] }) => {
     return () => cancelAnimationFrame(cancel);
   }, []);
 
-  const t0 = (remote.sensorStats[0]?.timestamp ?? 0) / 1000;
   const t = Date.now() / 1000;
 
   return (
     <svg
       viewBox={`-3 -0.5 3.5 1`}
-      style={{ width: "100%", height: 200, maxWidth: "600px" }}
+      style={{ width: "100%", maxHeight: 300, maxWidth: "600px" }}
     >
       <line
         x1={-99999}
@@ -76,7 +75,7 @@ const Remote = ({ remote }: { remote: HostState["remotes"][number] }) => {
           remote.sensorStats
             .map(({ alpha, timestamp }) => {
               const x = timestamp / 1000 - t;
-              const y = alpha / 100;
+              const y = alpha / 200;
 
               return `L${x} ${y}`;
             })
@@ -93,7 +92,7 @@ const Remote = ({ remote }: { remote: HostState["remotes"][number] }) => {
           remote.sensorStats
             .map(({ gamma, timestamp }) => {
               const x = timestamp / 1000 - t;
-              const y = gamma / 100;
+              const y = gamma / 200;
 
               return `L${x} ${y}`;
             })
