@@ -1,8 +1,4 @@
-import type {
-  KVNamespace,
-  R2Bucket,
-  ExportedHandler,
-} from "@cloudflare/workers-types";
+import type { R2Bucket, ExportedHandler } from "@cloudflare/workers-types";
 
 /*
  * middleware to append access control related headers to the response
@@ -37,7 +33,7 @@ const cors =
   };
 
 export default {
-  fetch: cors(async (req, { kv, bucket }) => {
+  fetch: cors(async (req, { bucket }) => {
     const url = new URL(req.url);
 
     const [, key] = url.pathname.match(/^\/room\/(\w*)\/?$/) ?? [];
@@ -99,6 +95,5 @@ export default {
     return new Response("unknown route", { status: 404 });
   }),
 } satisfies ExportedHandler<{
-  kv: KVNamespace;
   bucket: R2Bucket;
 }>;
