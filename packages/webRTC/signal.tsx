@@ -1,5 +1,6 @@
 // const STORE_URL = "https://bong-bong--webrtc-signal.platane.workers.dev";
-const STORE_URL = location.origin + "/signal";
+// const STORE_URL = location.origin + "/signal";
+const STORE_URL = "https://bongbong-ck3.pages.dev/signal";
 
 export const signalBroadcast = async <D,>(
   key: string,
@@ -16,8 +17,11 @@ export const signalBroadcast = async <D,>(
 
     if (res.ok) return;
 
-    if (!(res.status === 409 && (await res.text()) === "concurrent write"))
+    if (res.status === 409 && (await res.text()) === "concurrent write") {
+      continue;
+    } else {
       throw await res.text().catch(() => res.statusText);
+    }
   }
 };
 
@@ -52,10 +56,9 @@ export const signalListen = <D,>(
       i = list.length;
     } else if (res.status !== 404) throw res.text().catch(() => res.statusText);
 
-    setTimeout(
-      loop,
-      typeof pollingDuration === "number" ? pollingDuration : pollingDuration()
-    );
+    const delay =
+      typeof pollingDuration === "number" ? pollingDuration : pollingDuration();
+    setTimeout(loop, delay);
   };
 
   loop();
