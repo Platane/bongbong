@@ -71,7 +71,7 @@ export default {
     if (key && req.method === "PUT") {
       const body = await req.json();
 
-      const RETRY_COUNT = 3;
+      const RETRY_COUNT = 4;
       for (let k = RETRY_COUNT; k--; ) {
         const value = await bucket.get(key);
 
