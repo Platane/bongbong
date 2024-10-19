@@ -10,9 +10,18 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   const u = new URL(request.url);
   u.pathname = u.pathname.split("/signal")[1];
 
-  const redirect = new Request(u.toString(), request);
+  const redirect = new Request(u.toString(), request as Request);
+
+  // use a stub instead
 
   console.log(u, redirect.url);
 
-  return out.fetch(redirect, env);
+  const r = new Proxy(request, {
+    get(target, prop, receiver) {
+      if (prop === "url") return u.toString();
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+
+  return out.fetch(r as any, env);
 };
