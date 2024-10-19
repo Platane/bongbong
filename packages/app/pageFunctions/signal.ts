@@ -1,6 +1,11 @@
 import type { R2Bucket, PagesFunction } from "@cloudflare/workers-types";
 import out from "../../webRTC-signal";
 
+/**
+ * it would be nice to have the signal api on the same origin to avoid pre flight request
+ * it should be possible with page functions
+ */
+
 export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   request,
   env,
