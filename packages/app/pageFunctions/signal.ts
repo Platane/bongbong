@@ -5,18 +5,10 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   request,
   env,
 }) => {
-  console.log("coucou");
-
   const u = new URL(request.url);
   u.pathname = u.pathname.split("/signal")[1];
 
-  const redirect = new Request(u.toString(), request as Request);
-
-  // use a stub instead
-
-  console.log(u, redirect.url);
-
-  const r = new Proxy(request, {
+  const requestWithDifferentUrl = new Proxy(request, {
     get(target, prop, receiver) {
       if (prop === "url") return u.toString();
       if (prop === "json") return () => target.json();
@@ -24,5 +16,5 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
     },
   });
 
-  return out.fetch(r as any, env);
+  return out.fetch(requestWithDifferentUrl as any, env);
 };
