@@ -1,4 +1,5 @@
-import { createGuest, createHost } from "@bongbong/webRTC/multi-host";
+import { createGuest, createHost } from "@bongbong/webRTC/multi-guest";
+import { createSubscribable } from "../utils/subscribable";
 import { Game, Hand, InputKind, Track } from "./game";
 
 type Message =
@@ -38,7 +39,7 @@ export const createHostState = (roomKey: string) => {
 
   const remotePing = new Map<string, { ping: number; delta: number }>();
 
-  host.subscribe((data) => {
+  host.subscribeToMessage((data) => {
     if (data.type === "pong") {
       const ping = Date.now() - data.requestLocalDate;
       const delta = Date.now() - (data.answerRemoteDate - ping / 2);
@@ -139,7 +140,7 @@ export const createGuestState = (roomKey: string) => {
     broadcastStateChange();
   });
 
-  guest.subscribe((data) => {
+  guest.subscribeToMessage((data) => {
     if (data.type === "ping") {
       guest.send({
         type: "pong",
@@ -177,23 +178,6 @@ export const createGuestState = (roomKey: string) => {
     setRemoteDescription,
     inputRemote,
   };
-};
-
-const createSubscribable = () => {
-  const listeners = new Set<() => void>();
-
-  const broadcast = () => {
-    for (const l of listeners) l();
-  };
-  const subscribe = (h: () => void) => {
-    listeners.add(h);
-    return () => {
-      listeners.delete(h);
-    };
-  };
-  const dispose = () => listeners.clear();
-
-  return { broadcast, subscribe, dispose };
 };
 
 /**

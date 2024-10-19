@@ -1,7 +1,9 @@
 import QRCode from "qrcode";
 import { signalBroadcast, signalListen } from "@bongbong/webRTC/signal";
-import readmeContent from "./README.md?raw";
 import { rtcConfiguration } from "@bongbong/webRTC/webRTC.configuration";
+
+// @ts-ignore
+import readmeContent from "./README.md?raw";
 
 ///
 /// some html elements
@@ -270,5 +272,3 @@ if (joinKey) {
 
   join(joinKey);
 }
-
-document.unca;
