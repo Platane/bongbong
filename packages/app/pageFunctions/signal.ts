@@ -15,6 +15,7 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   const requestWithDifferentUrl = new Proxy(request, {
     get(target, prop) {
       if (prop === "url") return u.toString();
+      if (prop === "json") return () => target.json();
       return (target as any)[prop];
     },
   });
