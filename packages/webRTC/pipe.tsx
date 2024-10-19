@@ -38,6 +38,8 @@ export const host = (signalingChannel: SignalingChannel) => {
   dataChannel.addEventListener("error", (event) => reportError());
 
   peerConnection.addEventListener("connectionstatechange", () => {
+    console.debug("connectionstatechange", peerConnection.connectionState);
+
     if (
       peerConnection.connectionState === "closed" ||
       peerConnection.connectionState === "disconnected" ||
@@ -72,24 +74,48 @@ export const host = (signalingChannel: SignalingChannel) => {
   // hold remote ice candidate while the answer arrives
   const remoteIceCandidates = new Set<RTCIceCandidate>();
 
-  // listen to signaling server
-  const unsubscribe = signalingChannel.subscribe((message) => {
-    if (message.type === "guest-candidate") {
-      if (peerConnection.remoteDescription)
-        peerConnection.addIceCandidate(message.candidate).catch(reportError);
-      else remoteIceCandidates.add(message.candidate);
+  // handle message, one by one
+  const messageFile: SignalMessage[] = [];
+  let handlingMessage = false;
+  const handleMessage = async () => {
+    if (handlingMessage) return;
+
+    try {
+      handlingMessage = true;
+
+      const message = messageFile.shift();
+
+      if (!message) return;
+
+      if (message.type === "guest-candidate") {
+        if (peerConnection.remoteDescription)
+          await peerConnection.addIceCandidate(message.candidate);
+        else remoteIceCandidates.add(message.candidate);
+      }
+
+      if (
+        message.type === "guest-answer" &&
+        !peerConnection.remoteDescription
+      ) {
+        const answer = new RTCSessionDescription(message.answer);
+        await peerConnection.setRemoteDescription(answer);
+
+        for (const candidate of remoteIceCandidates)
+          await peerConnection.addIceCandidate(candidate);
+      }
+    } catch (err) {
+      reportError(err);
+    } finally {
+      handlingMessage = false;
     }
 
-    if (message.type === "guest-answer" && !peerConnection.remoteDescription) {
-      const answer = new RTCSessionDescription(message.answer);
-      peerConnection
-        .setRemoteDescription(answer)
-        .then(async () => {
-          for (const candidate of remoteIceCandidates)
-            await peerConnection.addIceCandidate(candidate);
-        })
-        .catch(reportError);
-    }
+    handleMessage();
+  };
+
+  // listen to signaling server
+  const unsubscribe = signalingChannel.subscribe((message) => {
+    messageFile.push(message);
+    handleMessage();
   });
 
   return {
@@ -125,6 +151,8 @@ export const join = (signalingChannel: SignalingChannel): Pipe => {
   let timeout: Timer | undefined;
 
   peerConnection.addEventListener("connectionstatechange", () => {
+    console.debug("connectionstatechange", peerConnection.connectionState);
+
     if (
       peerConnection.connectionState === "closed" ||
       peerConnection.connectionState === "disconnected" ||
@@ -152,46 +180,70 @@ export const join = (signalingChannel: SignalingChannel): Pipe => {
   // hold remote ice candidate while the answer arrives
   const remoteIceCandidates = new Set<RTCIceCandidate>();
 
-  // listen to signaling server
   let unwrittenAnswer: RTCLocalSessionDescriptionInit | undefined;
+
+  // handle message, one by one
+  const messageFile: SignalMessage[] = [];
+  let handlingMessage = false;
+  const handleMessage = async () => {
+    if (handlingMessage) return;
+
+    try {
+      handlingMessage = true;
+
+      const message = messageFile.shift();
+
+      if (!message) return;
+
+      if (message.type === "host-candidate") {
+        if (peerConnection.remoteDescription)
+          await peerConnection.addIceCandidate(message.candidate);
+        else remoteIceCandidates.add(message.candidate);
+      }
+
+      if (message.type === "guest-answer" && unwrittenAnswer) {
+        if (JSON.stringify(message.answer) === JSON.stringify(unwrittenAnswer))
+          unwrittenAnswer = undefined;
+        else throw new Error("offer answered by another guest");
+      }
+
+      if (message.type === "host-offer" && !peerConnection.remoteDescription) {
+        const offer = new RTCSessionDescription(message.offer);
+        await peerConnection.setRemoteDescription(offer);
+
+        for (const candidate of remoteIceCandidates)
+          await peerConnection.addIceCandidate(candidate);
+
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        unwrittenAnswer = answer;
+
+        signalingChannel
+          .broadcast({ type: "guest-answer", answer })
+          .catch(reportError);
+
+        timeout = setTimeout(
+          () =>
+            reportError(
+              new Error("timeout while waiting for host to accept answer")
+            ),
+          8 * 1000
+        );
+      }
+    } catch (err) {
+      reportError(err);
+    } finally {
+      handlingMessage = false;
+    }
+
+    handleMessage();
+  };
+
+  // listen to signaling server
   const unsubscribe = signalingChannel.subscribe((message) => {
-    if (message.type === "host-candidate") {
-      if (peerConnection.remoteDescription)
-        peerConnection.addIceCandidate(message.candidate).catch(reportError);
-      else remoteIceCandidates.add(message.candidate);
-    }
-
-    if (message.type === "guest-answer" && unwrittenAnswer) {
-      if (JSON.stringify(message.answer) === JSON.stringify(unwrittenAnswer))
-        unwrittenAnswer = undefined;
-      else reportError(new Error("offer answered by another guest"));
-    }
-
-    if (message.type === "host-offer" && !peerConnection.remoteDescription) {
-      const offer = new RTCSessionDescription(message.offer);
-      peerConnection
-        .setRemoteDescription(offer)
-        .then(async () => {
-          for (const candidate of remoteIceCandidates)
-            await peerConnection.addIceCandidate(candidate);
-
-          const answer = await peerConnection.createAnswer();
-          await peerConnection.setLocalDescription(answer);
-
-          unwrittenAnswer = answer;
-
-          await signalingChannel.broadcast({ type: "guest-answer", answer });
-        })
-        .catch(reportError);
-
-      timeout = setTimeout(
-        () =>
-          reportError(
-            new Error("timeout while waiting for host to accept answer")
-          ),
-        8 * 1000
-      );
-    }
+    messageFile.push(message);
+    handleMessage();
   });
 
   let dataChannel: RTCDataChannel | undefined;

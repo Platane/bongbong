@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { createGuest, createHost } from "@bongbong/webRTC/multi-host";
+import { createGuest, createHost } from "@bongbong/webRTC/multi-guest";
 
 ///
 /// some html elements
@@ -73,7 +73,7 @@ if (!joinKey) {
     host.broadcast({ timestamp: Date.now(), type: "ping" });
   }, 5000);
 
-  host.subscribe((data) => {
+  host.subscribeToMessage((data) => {
     switch (data.type) {
       case "ping":
         return host.send(data.sender, { ...data, type: "pong" });
@@ -104,7 +104,7 @@ if (joinKey) {
       guest.send({ timestamp: Date.now(), type: "ping" });
   }, 5000);
 
-  guest.subscribe((data) => {
+  guest.subscribeToMessage((data) => {
     switch (data.type) {
       case "ping":
         return guest.send({ ...data, type: "pong" });
