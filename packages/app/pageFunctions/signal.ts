@@ -8,7 +8,7 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   console.log("coucou");
 
   const u = new URL(request.url);
-  u.pathname = "/api" + u.pathname;
+  u.pathname = u.pathname.split("/signal")[1];
 
   const redirect = new Request(u.toString(), request);
 
