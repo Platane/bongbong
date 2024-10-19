@@ -1,4 +1,4 @@
-import type { Note, Partition } from "./game";
+import type { Note, Partition } from "../state/game";
 
 // @ts-ignore
 import track1_url from "../asset/Different Heaven & EH!DE - My Heart.m4a";

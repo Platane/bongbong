@@ -1,12 +1,18 @@
-import { createGuest, createHost } from "@bongbong/webRTC/multi-guest";
+import { createHost } from "@bongbong/webRTC/multi-guest";
 import { createSubscribable } from "../utils/subscribable";
 import { Game, Hand, InputKind, Track } from "./game";
 
-type Message =
+export type Message =
   | { type: "remote-description"; hand: Hand }
   | { type: "ping"; requestLocalDate: number }
   | { type: "pong"; requestLocalDate: number; answerRemoteDate: number }
-  | { type: "remote-input"; timestamp: number; kind: InputKind; hand: Hand };
+  | { type: "remote-input"; timestamp: number; kind: InputKind; hand: Hand }
+  | {
+      type: "remote-report-sensor";
+      timestamp: number;
+      gamma: number;
+      alpha: number;
+    };
 
 export const createHostState = (roomKey: string) => {
   const { subscribe, broadcast: broadcastStateChange } = createSubscribable();
@@ -81,10 +87,36 @@ export const createHostState = (roomKey: string) => {
         broadcastStateChange();
       }
     }
+
+    if (data.type === "remote-report-sensor") {
+      const { delta } = remotePing.get(data.sender) ?? { delta: 0 };
+
+      const remotes = state.remotes.map((r) => {
+        if (r.id !== data.sender) return r;
+
+        const sensorStats = [
+          ...r.sensorStats,
+          {
+            gamma: data.gamma,
+            alpha: data.alpha,
+            timestamp: data.timestamp + delta,
+          },
+        ];
+        return { ...r, sensorStats };
+      });
+
+      state = { ...state, remotes };
+      broadcastStateChange();
+    }
   });
 
   type State = {
-    remotes: { id: string; hand: Hand; ping: number }[];
+    remotes: {
+      id: string;
+      hand: Hand;
+      ping: number;
+      sensorStats: { gamma: number; alpha: number; timestamp: number }[];
+    }[];
     game: Game | undefined;
   };
 
@@ -116,67 +148,6 @@ export const createHostState = (roomKey: string) => {
     },
 
     startGame,
-  };
-};
-
-export const createGuestState = (roomKey: string) => {
-  const { subscribe, broadcast: broadcastStateChange } = createSubscribable();
-
-  const guest = createGuest<Message>(roomKey);
-
-  type State = {
-    connectionStatus: ReturnType<typeof guest.getStatus>;
-    description: { hand: Hand };
-    inputs: { timestamp: number; kind: InputKind }[];
-  };
-  let state: State = {
-    connectionStatus: guest.getStatus(),
-    description: { hand: "right" },
-    inputs: [],
-  };
-
-  guest.subscribeToStatusChange(() => {
-    state = { ...state, connectionStatus: guest.getStatus() };
-    broadcastStateChange();
-  });
-
-  guest.subscribeToMessage((data) => {
-    if (data.type === "ping") {
-      guest.send({
-        type: "pong",
-        answerRemoteDate: Date.now(),
-        requestLocalDate: data.requestLocalDate,
-      });
-    }
-  });
-
-  const setRemoteDescription = (hand: Hand) => {
-    state = { ...state, description: { hand } };
-
-    guest.send({ type: "remote-description", hand });
-
-    broadcastStateChange();
-  };
-
-  const inputRemote = (kind: InputKind) => {
-    const input = { kind, timestamp: Date.now(), hand: state.description.hand };
-
-    state = { ...state, inputs: [...state.inputs, input] };
-
-    broadcastStateChange();
-
-    guest.send({ type: "remote-input", ...input });
-  };
-
-  return {
-    subscribe,
-    getState: () => state,
-    dispose: () => {
-      guest.dispose();
-    },
-
-    setRemoteDescription,
-    inputRemote,
   };
 };
 

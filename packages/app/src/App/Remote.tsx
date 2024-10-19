@@ -4,7 +4,7 @@ import { useGuestState } from "./useState";
 export const Remote = ({ roomId }: { roomId: string }) => {
   const state = useGuestState(roomId);
 
-  const { inputRemote, setRemoteDescription } = state;
+  const { inputRemote, setRemoteDescription, reportSensor } = state;
   const hand = state.description.hand;
   const markRemoteUnsupported = () => {
     // alert("unsupported");
@@ -53,6 +53,8 @@ export const Remote = ({ roomId }: { roomId: string }) => {
 
           return;
         }
+
+        reportSensor({ alpha, gamma });
 
         let hit = null as null | "skin" | "ring";
 

@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useHostState } from "./useState";
-import type { Game, Track } from "./game";
+import type { Game, Track } from "../state/game";
 import QRCode from "react-qr-code";
-import { tracks } from "./trackList";
 import { PlayTrack } from "../PlayTrack/PlayTrack";
+import { tracks } from "../state/trackList";
 
 export const Host = ({ roomId }: { roomId: string }) => {
   const state = useHostState(roomId);
