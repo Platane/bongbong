@@ -14,6 +14,16 @@ export type Message =
       alpha: number;
     };
 
+export type State = {
+  remotes: {
+    id: string;
+    hand: Hand;
+    ping: number;
+    sensorStats: { gamma: number; alpha: number; timestamp: number }[];
+  }[];
+  game: Game | undefined;
+};
+
 export const createHostState = (roomKey: string) => {
   const { subscribe, broadcast: broadcastStateChange } = createSubscribable();
 
@@ -24,6 +34,7 @@ export const createHostState = (roomKey: string) => {
       id,
       hand: "right" as Hand,
       ping: 10,
+      sensorStats: [],
       ...state.remotes.find((r) => r.id === id),
     }));
 
@@ -40,7 +51,7 @@ export const createHostState = (roomKey: string) => {
 
     host.broadcast({ type: "ping", requestLocalDate: Date.now() });
 
-    timeoutLoop = setTimeout(pingLoop, 15 * 1000);
+    timeoutLoop = setTimeout(pingLoop, 10 * 1000);
   };
 
   const remotePing = new Map<string, { ping: number; delta: number }>();
@@ -102,6 +113,7 @@ export const createHostState = (roomKey: string) => {
             timestamp: data.timestamp + delta,
           },
         ];
+        while (sensorStats.length > 300) sensorStats.shift();
         return { ...r, sensorStats };
       });
 
@@ -109,16 +121,6 @@ export const createHostState = (roomKey: string) => {
       broadcastStateChange();
     }
   });
-
-  type State = {
-    remotes: {
-      id: string;
-      hand: Hand;
-      ping: number;
-      sensorStats: { gamma: number; alpha: number; timestamp: number }[];
-    }[];
-    game: Game | undefined;
-  };
 
   let state: State = {
     remotes: [],
