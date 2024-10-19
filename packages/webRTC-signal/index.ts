@@ -75,21 +75,23 @@ export default {
     if (key && req.method === "PUT") {
       const body = await req.json();
 
-      const value = await bucket.get(key);
+      const RETRY_COUNT = 3;
+      for (let k = RETRY_COUNT; k--; ) {
+        const value = await bucket.get(key);
 
-      const list = value ? ((await value.json()) as any[]) : [];
-      list.push(body);
+        const list = value ? ((await value.json()) as unknown[]) : [];
+        list.push(body);
 
-      const result = await bucket.put(
-        key,
-        JSON.stringify(list),
-        value ? { onlyIf: { etagMatches: value.etag } } : {}
-      );
+        const result = await bucket.put(
+          key,
+          JSON.stringify(list),
+          value ? { onlyIf: { etagMatches: value.etag } } : {}
+        );
 
-      if (result === null)
-        return new Response("concurrent write", { status: 409 });
+        if (result) return new Response("ok");
+      }
 
-      return new Response("ok");
+      return new Response("concurrent write", { status: 409 });
     }
 
     if (key && req.method === "OPTIONS") return new Response();
