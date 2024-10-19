@@ -7,10 +7,11 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
 }) => {
   console.log("coucou");
 
-  return new Response("ok");
-
   const u = new URL(request.url);
   u.pathname = "/api" + u.pathname;
   request.url = u.toString();
+
+  console.log(u, request.url);
+
   return out.fetch(request, env);
 };
