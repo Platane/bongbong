@@ -35,7 +35,8 @@ jobs:
 
       - run: bun build packages/app/pageFunctions/signal.ts --outfile=packages/app/dist/functions/signal/room/[roomId].js
 
-      - run: bunx wrangler pages deploy packages/app/dist --project-name=bongbong --branch=main
+      - run: bunx wrangler pages deploy . --project-name=bongbong --branch=main
+        working-directory: packages/app/dist
         if: github.ref == 'refs/heads/main'
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
