@@ -35,8 +35,13 @@ export const host = (signalingChannel: SignalingChannel) => {
 
   // attach error event
   dataChannel.addEventListener("close", (event) => reportError());
-  dataChannel.addEventListener("error", (event) => reportError());
+  dataChannel.addEventListener("error", (event) => {
+    reportError();
+  });
 
+  peerConnection.addEventListener("icecandidateerror", (event) => {
+    console.debug("icecandidateerror", event.errorText);
+  });
   peerConnection.addEventListener("connectionstatechange", () => {
     console.debug("connectionstatechange", peerConnection.connectionState);
 

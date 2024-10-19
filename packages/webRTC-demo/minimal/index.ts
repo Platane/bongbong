@@ -100,8 +100,8 @@ const host = async (roomKey: string) => {
   peerConnection.addEventListener("connectionstatechange", () =>
     console.log("peerConnection status:", peerConnection.connectionState)
   );
-  peerConnection.addEventListener("icecandidateerror", () =>
-    console.log("icecandidateerror:")
+  peerConnection.addEventListener("icecandidateerror", (event) =>
+    console.log("icecandidateerror:", event.errorText)
   );
 
   peerConnection.addEventListener("icecandidate", async ({ candidate }) => {
