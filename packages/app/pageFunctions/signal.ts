@@ -19,6 +19,7 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
   const r = new Proxy(request, {
     get(target, prop, receiver) {
       if (prop === "url") return u.toString();
+      if (prop === "json") return () => target.json();
       return Reflect.get(target, prop, receiver);
     },
   });
