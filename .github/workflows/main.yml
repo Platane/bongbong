@@ -22,15 +22,15 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bunx vite build --base /bongbong/
+      - run: bunx vite build --base /
         working-directory: packages/app
 
       - run: cp packages/app/dist/index.html packages/app/dist/404.html
 
-      - run: bunx vite build --base /bongbong/demo/webRTC-minimal --outDir ../../app/dist/demo/webRTC-minimal --minify false
+      - run: bunx vite build --base /demo/webRTC-minimal --outDir ../../app/dist/demo/webRTC-minimal --minify false
         working-directory: packages/webRTC-demo/minimal
 
-      - run: bunx vite build --base /bongbong/demo/webRTC-multi-guest --outDir ../../app/dist/demo/webRTC-multi-guest --minify false
+      - run: bunx vite build --base /demo/webRTC-multi-guest --outDir ../../app/dist/demo/webRTC-multi-guest --minify false
         working-directory: packages/webRTC-demo/multi-guest
 
       - run: bun build packages/app/pageFunctions/signal.ts --outfile=packages/app/dist/functions/signal/room/[roomId].js
