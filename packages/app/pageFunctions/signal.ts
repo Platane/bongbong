@@ -12,6 +12,10 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
     get(target, prop, receiver) {
       if (prop === "url") return u.toString();
       if (prop === "json") return () => target.json();
+      if (prop === "method") return target.method;
+      if (prop === "header")
+        return { get: (name: string) => target.headers.get(name) };
+
       return (target as any)[prop];
     },
   });
