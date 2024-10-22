@@ -5,6 +5,7 @@ import QRCode from "react-qr-code";
 import { PlayTrack } from "../PlayTrack/PlayTrack";
 import { tracks } from "../state/trackList";
 import { State as HostState } from "../state/hostState";
+import { Scene } from "../Scene/Scene";
 
 export const Host = ({ roomId }: { roomId: string }) => {
   const state = useHostState(roomId);
@@ -169,6 +170,7 @@ const Game = ({ game, roomId }: { game: Game; roomId: string }) => {
         join with a new remote
       </a>
       <PlayTrack {...game} />
+      <Scene style={{ maxWidth: "800px", width: "100%", height: "400px" }} />
     </>
   );
 };

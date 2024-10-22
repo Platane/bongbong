@@ -1,12 +1,19 @@
 import * as React from "react";
 import { Remote } from "./Remote";
 import { Host } from "./Host";
+import { Scene } from "../Scene/Scene";
 
 export const App = () => {
-  const [, remoteRoomId] =
-    location.pathname.match(/\/room\/(\w+)\/remote\/?/) ?? [];
+  if (location.pathname.startsWith("/game")) {
+    return <Scene style={{ width: "100vw", height: "100vh" }} />;
+  }
 
-  if (remoteRoomId) return <Remote roomId={remoteRoomId} />;
+  {
+    const [, remoteRoomId] =
+      location.pathname.match(/\/room\/(\w+)\/remote\/?/) ?? [];
+
+    if (remoteRoomId) return <Remote roomId={remoteRoomId} />;
+  }
 
   return <Viewer />;
 };
