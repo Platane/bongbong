@@ -10,6 +10,7 @@ function Box(props) {
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
   // Subscribe this component to the render-loop, rotate the mesh every frame
+
   useFrame((state, delta) => (ref.current.rotation.x += delta));
   // Return the view, these are regular Threejs elements expressed in JSX
   return (
@@ -38,8 +39,6 @@ export const Scene = (props: React.ComponentProps<typeof Canvas>) => (
       intensity={Math.PI}
     />
     <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-    <Box position={[-1.5, 0, 0]} />
-    <Box position={[1.5, 0, 0]} />
 
     <Terry />
   </Canvas>

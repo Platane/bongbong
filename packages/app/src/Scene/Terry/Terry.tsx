@@ -3,6 +3,7 @@ import React from "react";
 import { MeshToonMaterial } from "three";
 import * as THREE from "three";
 import { Face } from "./Face";
+import { Arm } from "./Arm";
 
 export const Terry = ({
   pose,
@@ -13,21 +14,48 @@ export const Terry = ({
     rightHand: { vy: number; vx: number };
   };
 }) => {
-  const ref = React.useRef<THREE.Mesh | null>(null);
-  //   useFrame((state, delta) => (ref.current.rotation.x += delta));
+  const ref = React.useRef<THREE.Group | null>(null);
+  useFrame((state, delta) => {
+    if (!ref.current) return;
+
+    ref.current.userData.t = (ref.current.userData.t ?? 0) + delta;
+
+    ref.current.rotation.y =
+      Math.sin(ref.current.userData.t * 1.4) * 0.5 - 0.35;
+  });
+
+  const [B, setB] = React.useState(() => new THREE.Vector3(3, 0, -1));
 
   return (
     <group
-      //
-      rotation={[1.2, 0, 0.2]}
       ref={ref}
+      position={[-1.3, 0, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        console.log("ccc");
+
+        const angle = Math.random() * 2 - 1;
+
+        setB(
+          new THREE.Vector3(1 + Math.cos(angle) * 2, 0, Math.sin(angle) * 2)
+        );
+      }}
     >
-      <Body />
-      <Face rotation={[-Math.PI / 2, 0, 0]} position={[0, 1, 0]} />
+      <group
+        //
+        rotation={[1.4, 0, 0.1]}
+      >
+        <Body />
+        <Face rotation={[-Math.PI / 2, 0, 0]} position={[0, 1, 0]} />
+        <Arm
+          A={new THREE.Vector3(1, 0, 0)}
+          B={B}
+          particleCount={10}
+          restingLength={2}
+        />
+      </group>
     </group>
   );
-
-  return null;
 };
 
 const Body = () => {
@@ -120,8 +148,6 @@ const createDrumGeometry = () => {
     );
   }
 
-  console.log(positions);
-
   geometry.setAttribute(
     "position",
     new THREE.BufferAttribute(new Float32Array(positions), 3)
@@ -131,12 +157,6 @@ const createDrumGeometry = () => {
 
   geometry.computeBoundingSphere();
   geometry.computeBoundingBox();
-
-  console.log(geometry.drawRange, geometry, geometry.boundingBox);
-
-  return geometry;
-
-  return new THREE.CylinderGeometry(1, 1, 1, 5, 1);
 
   return geometry;
 };
