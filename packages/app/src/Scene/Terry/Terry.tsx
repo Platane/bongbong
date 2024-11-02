@@ -155,9 +155,6 @@ const createDrumGeometry = () => {
 
   geometry.computeVertexNormals();
 
-  geometry.computeBoundingSphere();
-  geometry.computeBoundingBox();
-
   return geometry;
 };
 const drumGeometry = createDrumGeometry();
