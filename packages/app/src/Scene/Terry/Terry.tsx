@@ -69,6 +69,7 @@ const Body = () => {
     <mesh geometry={drumGeometry}>
       {/* <meshToonMaterial color={"blue"} /> */}
       <meshStandardMaterial color="blue" />
+      {/* <meshNormalMaterial /> */}
     </mesh>
   );
 };
@@ -78,7 +79,7 @@ const createDrumGeometry = () => {
 
   // constant
 
-  const radialSegments = 10;
+  const radialSegments = 18;
   const heightSegments = 10;
 
   const radius = 0.7;
@@ -113,8 +114,16 @@ const createDrumGeometry = () => {
       const c = [Math.sin(a1) * r2, h2, Math.cos(a1) * r2];
       const d = [Math.sin(a0) * r2, h2, Math.cos(a0) * r2];
 
+      const na = new THREE.Vector3().fromArray(a).normalize();
+      const nb = new THREE.Vector3().fromArray(b).normalize();
+      const nc = new THREE.Vector3().fromArray(c).normalize();
+      const nd = new THREE.Vector3().fromArray(d).normalize();
+
       positions.push(...a, ...b, ...c);
       positions.push(...c, ...d, ...a);
+
+      normals.push(...na, ...nb, ...nc);
+      normals.push(...nc, ...nd, ...na);
     }
   }
 
@@ -152,14 +161,44 @@ const createDrumGeometry = () => {
       -h,
       Math.cos(a0) * radius
     );
+
+    normals.push(
+      0,
+      1,
+      0,
+
+      0,
+      1,
+      0,
+
+      0,
+      1,
+      0
+    );
+
+    normals.push(
+      0,
+      -1,
+      0,
+
+      0,
+      -1,
+      0,
+
+      0,
+      -1,
+      0
+    );
   }
 
   geometry.setAttribute(
     "position",
     new THREE.BufferAttribute(new Float32Array(positions), 3)
   );
-
-  geometry.computeVertexNormals();
+  geometry.setAttribute(
+    "normal",
+    new THREE.BufferAttribute(new Float32Array(normals), 3)
+  );
 
   return geometry;
 };

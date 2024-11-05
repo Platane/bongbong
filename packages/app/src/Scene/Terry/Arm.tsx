@@ -43,10 +43,13 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
   const { dispose, onFrame } = React.useMemo(() => {
     const geometry = new THREE.SphereGeometry(0.01);
     // const material = new THREE.MeshStandardMaterial({
-    //   color: "orange",
-    //   // wireframe: true,
+    //   color: "#333",
+    //   emissive: "#333",
+    //   roughness: 10,
+    //   metalness: 0,
     // });
     const material = new THREE.MeshNormalMaterial();
+    // const material = new THREE.MeshBasicMaterial({ color: "#333" });
 
     const meshes = Array.from(
       { length: particleCount },
@@ -176,7 +179,7 @@ export const createWorld = (
 
     const l = Math.hypot(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z);
 
-    const stiffness = 150;
+    const stiffness = 250;
     const damping = 12;
     const joinData = RAPIER.JointData.spring(l / 2, stiffness, damping, o, o);
 
