@@ -68,8 +68,8 @@ const Body = () => {
   return (
     <mesh geometry={drumGeometry}>
       {/* <meshToonMaterial color={"blue"} /> */}
-      <meshStandardMaterial color="blue" />
-      {/* <meshNormalMaterial /> */}
+      {/* <meshStandardMaterial color="blue" /> */}
+      <meshNormalMaterial />
     </mesh>
   );
 };
