@@ -29,7 +29,7 @@ export const Terry = ({
   return (
     <group
       ref={ref}
-      position={[-1.3, 0, 0]}
+      position={[0, 0, 0]}
       onClick={(e) => {
         e.stopPropagation();
         console.log("ccc");
@@ -48,10 +48,16 @@ export const Terry = ({
         <Body />
         <Face rotation={[-Math.PI / 2, 0, 0]} position={[0, 1, 0]} />
         <Arm
-          A={new THREE.Vector3(1, 0, 0)}
+          A={new THREE.Vector3(0.85, 0.72, 0.2)}
           B={B}
           particleCount={10}
           restingLength={2}
+        />
+        <Arm
+          A={new THREE.Vector3(-0.85, 0.72, 0.2)}
+          B={{ x: -B.x, y: -B.y, z: B.z }}
+          particleCount={10}
+          restingLength={1.8}
         />
       </group>
     </group>
