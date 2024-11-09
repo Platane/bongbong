@@ -6,6 +6,7 @@ import { PlayTrack } from "../PlayTrack/PlayTrack";
 import { tracks } from "../state/trackList";
 import { State as HostState } from "../state/hostState";
 import { Scene } from "../Scene/Scene";
+import { GameScreen } from "./GameScreen";
 
 export const Host = ({ roomId }: { roomId: string }) => {
   const state = useHostState(roomId);
@@ -169,8 +170,7 @@ const Game = ({ game, roomId }: { game: Game; roomId: string }) => {
       <a target="_blank" href={joinUrl}>
         join with a new remote
       </a>
-      <PlayTrack {...game} />
-      <Scene style={{ maxWidth: "800px", width: "100%", height: "400px" }} />
+      <GameScreen game={game} />
     </>
   );
 };

@@ -5,7 +5,7 @@ export type Hand = "left" | "right";
 export type Input = { time: number; kind: InputKind; hand: Hand };
 
 export type Note =
-  | { kind: "ring" | "skin"; time: number }
+  | { kind: InputKind; time: number }
   | { kind: "blast"; time: number; duration: number };
 
 export type Partition = Note[];
