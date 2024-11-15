@@ -209,11 +209,11 @@ const Inside = ({
         {Array.from({ length: 100 }, (_, i) => (
           <Note key={i} stance={""} kind={"ring"} position={[i * 0.6, 0, 0]} />
         ))}
+        <Note stance={""} kind={"skin"} position={[-3, 0, 0]} />
       </scene>
 
       <scene name="terry">
         <perspectiveCamera position={[0, 0, 7]} far={100} near={1} />
-        {lightRig}
         <Terry />
       </scene>
     </group>
