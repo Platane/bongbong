@@ -51,12 +51,10 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     const material = new THREE.MeshNormalMaterial();
     // const material = new THREE.MeshBasicMaterial({ color: "#333" });
 
-    const meshes = Array.from(
+    const debugSpheres = Array.from(
       { length: particleCount },
-      () => new THREE.Mesh(geometry, material),
+      () => new THREE.Mesh(geometry, material)
     );
-
-    for (const m of meshes) scene.add(m);
 
     const A = new THREE.Vector3();
     A.copy(refAnchor.current.A);
@@ -73,22 +71,34 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     const tubeParams = { radius: 0.17, radialSegments: 8 };
     const tube = new THREE.Mesh(
       createTubeGeometry(particleCount, tubeParams),
-      material,
+      material
     );
-    scene.getObjectByName("terry")!.add(tube);
 
     const sphereGeometry = new THREE.SphereGeometry(
       tubeParams.radius * 0.98,
       Math.ceil(tubeParams.radialSegments),
-      Math.ceil(tubeParams.radialSegments),
+      Math.ceil(tubeParams.radialSegments)
     );
     const sphereA = new THREE.Mesh(sphereGeometry, material);
     const sphereB = new THREE.Mesh(sphereGeometry, material);
-    scene.getObjectByName("terry")!.add(sphereA);
-    scene.getObjectByName("terry")!.add(sphereB);
+
+    const group = new THREE.Group();
+    group.add(tube);
+    group.add(sphereA);
+    group.add(sphereB);
+    for (const m of debugSpheres) group.add(m);
 
     const onFrame = (_: unknown, dt: number) => {
       if (!ref.current) return;
+
+      // attach objects
+      if (!group.parent) {
+        // find the closest scene
+        let root = ref.current as THREE.Object3D;
+        while (!(root as any).isScene) root = root.parent ?? scene;
+
+        root.add(group);
+      }
 
       const positions = getPositions();
       updateTubeGeometry(tube.geometry, positions, tubeParams);
@@ -103,15 +113,12 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
       sphereB.position.copy(positions.at(-1)!);
 
       step(dt);
-      applyToScene(meshes);
+      applyToScene(debugSpheres);
     };
 
     return {
       dispose: () => {
-        for (const m of meshes) m.parent?.remove(m);
-        tube.parent?.remove(tube);
-        sphereA.parent?.remove(sphereA);
-        sphereB.parent?.remove(sphereB);
+        group.parent?.remove(group);
         disposeWorld();
       },
       onFrame,
@@ -135,7 +142,7 @@ export const createWorld = (
   }: {
     A: { x: number; y: number; z: number };
     B: { x: number; y: number; z: number };
-  },
+  }
 ) => {
   const gravity = { x: 0.0, y: -9.81, z: 0.0 };
 
