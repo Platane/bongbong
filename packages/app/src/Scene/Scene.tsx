@@ -182,8 +182,11 @@ const Inside = ({
       renderer.setScissor(left, bottom, width, height);
       renderer.setScissorTest(true);
 
-      camera.aspect = width / height;
+      const aspect = width / height;
+      camera.aspect = aspect;
       camera.updateProjectionMatrix();
+
+      camera.position.z = 7 + (Math.max(1, 1 / aspect) - 1) * 12;
 
       renderer.clearDepth();
       renderer.clearStencil();
@@ -209,7 +212,7 @@ const Inside = ({
       </scene>
 
       <scene name="terry">
-        <perspectiveCamera position={[0, 1, 7]} far={100} near={1} />
+        <perspectiveCamera position={[0, 0, 7]} far={100} near={1} />
         {lightRig}
         <Terry />
       </scene>
