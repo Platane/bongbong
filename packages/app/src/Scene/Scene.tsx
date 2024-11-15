@@ -7,6 +7,7 @@ import { Note } from "./PlayTrack/Note";
 
 export const Scene = (props: React.ComponentProps<"div">) => {
   const containerDom = {
+    container: React.useRef<HTMLCanvasElement | null>(null),
     playTrack: React.useRef<HTMLDivElement | null>(null),
     background: React.useRef<HTMLDivElement | null>(null),
     terry: React.useRef<HTMLDivElement | null>(null),
@@ -16,6 +17,7 @@ export const Scene = (props: React.ComponentProps<"div">) => {
     <div
       {...props}
       ref={containerDom.background}
+      id="background"
       style={{
         position: "relative",
         display: "flex",
@@ -33,6 +35,7 @@ export const Scene = (props: React.ComponentProps<"div">) => {
         }}
       >
         <div
+          id="terry"
           ref={containerDom.terry}
           style={{
             width: "min(  200px , 80% , 90% )",
@@ -51,7 +54,6 @@ export const Scene = (props: React.ComponentProps<"div">) => {
         }}
       >
         <div
-          ref={containerDom.playTrack}
           style={{
             width: "min(  300px , 30%  )",
             height: "100%",
@@ -60,6 +62,8 @@ export const Scene = (props: React.ComponentProps<"div">) => {
           }}
         />
         <div
+          id="playTrack"
+          ref={containerDom.playTrack}
           style={{
             width: "100%",
             height: "100%",
@@ -70,6 +74,8 @@ export const Scene = (props: React.ComponentProps<"div">) => {
       </div>
 
       <Canvas
+        dpr={2}
+        ref={containerDom.container}
         style={{
           position: "absolute",
           top: "0",
@@ -89,74 +95,100 @@ const Inside = ({
   containerDom,
 }: {
   containerDom: {
-    playTrack: React.RefObject<HTMLDivElement | null>;
-    background: React.RefObject<HTMLDivElement | null>;
-    terry: React.RefObject<HTMLDivElement | null>;
+    container: React.RefObject<HTMLElement | null>;
+    playTrack: React.RefObject<HTMLElement | null>;
+    background: React.RefObject<HTMLElement | null>;
+    terry: React.RefObject<HTMLElement | null>;
   };
 }) => {
-  const renderTargets = React.useMemo(() => {
-    const playTrack = new THREE.WebGLRenderTarget(128, 128);
-    const background = new THREE.WebGLRenderTarget(128, 128);
-    const terry = new THREE.WebGLRenderTarget(128, 128);
+  // const renderTargets = React.useMemo(() => {
+  //   const playTrack = new THREE.WebGLRenderTarget(128, 128);
+  //   const background = new THREE.WebGLRenderTarget(128, 128);
+  //   const terry = new THREE.WebGLRenderTarget(128, 128);
 
-    return { playTrack, background, terry };
-  }, []);
-  React.useEffect(
-    () => () => {
-      renderTargets.terry.dispose();
-      renderTargets.background.dispose();
-      renderTargets.playTrack.dispose();
-    },
-    [renderTargets]
-  );
+  //   return { playTrack, background, terry };
+  // }, []);
+  // React.useEffect(
+  //   () => () => {
+  //     renderTargets.terry.dispose();
+  //     renderTargets.background.dispose();
+  //     renderTargets.playTrack.dispose();
+  //   },
+  //   [renderTargets]
+  // );
 
-  useFrame(({ gl, scene: globalScene }) => {
-    gl.autoClear = false;
+  useFrame(({ gl: renderer, scene: globalScene }) => {
+    renderer.autoClear = false;
+
+    if (
+      !containerDom.playTrack.current ||
+      !containerDom.terry.current ||
+      !containerDom.container.current
+    )
+      return;
+
+    const rectContainer =
+      containerDom.container.current.getBoundingClientRect();
+
+    const size = new THREE.Vector2();
+    renderer.getDrawingBufferSize(size);
 
     {
-      const scene = globalScene.getObjectByName("background") as THREE.Scene;
+      const scene = globalScene.getObjectByName("playTrack") as THREE.Scene;
 
       const camera = scene.children[0] as THREE.OrthographicCamera;
 
       camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-      // scene.background = new THREE.Color("#a34");
+      const rect = containerDom.playTrack.current.getBoundingClientRect();
 
-      gl.render(scene, camera);
+      const left = Math.floor(rect.left - rectContainer.left);
+      const bottom = Math.floor(rectContainer.bottom - rect.bottom);
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+
+      scene.background = null;
+
+      renderer.setViewport(left, bottom, width, height);
+      renderer.setScissor(left, bottom, width, height);
+      renderer.setScissorTest(true);
+
+      const advance = 1.5;
+
+      camera.top = 1;
+      camera.bottom = -1;
+      camera.left = -advance;
+      camera.right =
+        width / (height / (camera.top - camera.bottom)) + camera.left;
+
+      camera.updateProjectionMatrix();
+
+      renderer.render(scene, camera);
     }
+
     {
       const scene = globalScene.getObjectByName("terry") as THREE.Scene;
 
       const camera = scene.children[0] as THREE.PerspectiveCamera;
 
-      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      const rect = containerDom.terry.current.getBoundingClientRect();
 
-      gl.clearDepth();
-      gl.clearStencil();
-      gl.render(scene, camera);
+      const left = Math.floor(rect.left - rectContainer.left);
+      const bottom = Math.floor(rectContainer.bottom - rect.bottom);
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
+
+      renderer.setViewport(left, bottom, width, height);
+      renderer.setScissor(left, bottom, width, height);
+      renderer.setScissorTest(true);
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.clearDepth();
+      renderer.clearStencil();
+      renderer.render(scene, camera);
     }
-
-    gl.autoClear = true;
-
-    // /** Render scene from camera A to a render target */
-    // scene.overrideMaterial = mnm;
-    // gl.setRenderTarget(aTarget);
-    // gl.render(scene, ACam.current);
-
-    // /** Render scene from camera B to a different render target */
-    // scene.overrideMaterial = dmm;
-    // gl.setRenderTarget(bTarget);
-    // gl.render(scene, BCam.current);
-
-    // scene.background = originalBg;
-    // // render main scene
-    // scene.overrideMaterial = null;
-    // gl.setRenderTarget(null);
-    // gl.render(scene, camera);
-
-    // // render GUI panels on top of main scene
-    // gl.render(guiScene, guiCamera.current);
-    // gl.autoClear = true;
   }, 1);
 
   const lightRig = (
@@ -168,7 +200,7 @@ const Inside = ({
 
   return (
     <group>
-      <scene name="background">
+      <scene name="playTrack">
         <orthographicCamera position={[0, 0, -1]} />
 
         {Array.from({ length: 100 }, (_, i) => (
@@ -177,7 +209,7 @@ const Inside = ({
       </scene>
 
       <scene name="terry">
-        <perspectiveCamera position={[0, 0, 20]} far={100} near={1} />
+        <perspectiveCamera position={[0, 1, 7]} far={100} near={1} />
         {lightRig}
         <Terry />
       </scene>
