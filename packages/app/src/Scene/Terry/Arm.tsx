@@ -41,7 +41,7 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
   const { scene } = useThree();
 
   const { dispose, onFrame } = React.useMemo(() => {
-    const geometry = new THREE.SphereGeometry(0.01);
+    const geometry = new THREE.SphereGeometry(0.1);
     // const material = new THREE.MeshStandardMaterial({
     //   color: "#333",
     //   emissive: "#333",
@@ -53,7 +53,7 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
 
     const meshes = Array.from(
       { length: particleCount },
-      () => new THREE.Mesh(geometry, material)
+      () => new THREE.Mesh(geometry, material),
     );
 
     for (const m of meshes) scene.add(m);
@@ -73,19 +73,19 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     const tubeParams = { radius: 0.17, radialSegments: 8 };
     const tube = new THREE.Mesh(
       createTubeGeometry(particleCount, tubeParams),
-      material
+      material,
     );
-    scene.add(tube);
+    scene.getObjectByName("terry")!.add(tube);
 
     const sphereGeometry = new THREE.SphereGeometry(
       tubeParams.radius * 0.98,
       Math.ceil(tubeParams.radialSegments),
-      Math.ceil(tubeParams.radialSegments)
+      Math.ceil(tubeParams.radialSegments),
     );
     const sphereA = new THREE.Mesh(sphereGeometry, material);
     const sphereB = new THREE.Mesh(sphereGeometry, material);
-    scene.add(sphereA);
-    scene.add(sphereB);
+    scene.getObjectByName("terry")!.add(sphereA);
+    scene.getObjectByName("terry")!.add(sphereB);
 
     const onFrame = (_: unknown, dt: number) => {
       if (!ref.current) return;
@@ -135,7 +135,7 @@ export const createWorld = (
   }: {
     A: { x: number; y: number; z: number };
     B: { x: number; y: number; z: number };
-  }
+  },
 ) => {
   const gravity = { x: 0.0, y: -9.81, z: 0.0 };
 

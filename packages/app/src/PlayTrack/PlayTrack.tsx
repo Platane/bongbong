@@ -52,7 +52,7 @@ export const PlayTrack = ({ track, inputs }: Game & {}) => {
               stroke="black"
               strokeWidth={0.005}
             />
-          )
+          ),
         )}
 
         {track.partition.map(({ time, kind }, i) => (
@@ -96,12 +96,12 @@ export const PlayTrack = ({ track, inputs }: Game & {}) => {
 
             const audio = track.audio;
             audio.controls = true;
-            audio.volume = 0.5;
+            audio.volume = 0.00004;
             audio.style.width = "100%";
 
             el.appendChild(audio);
           },
-          [track]
+          [track],
         )}
       ></div>
     </>
