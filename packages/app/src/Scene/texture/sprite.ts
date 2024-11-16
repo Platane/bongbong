@@ -18,6 +18,10 @@ const svgs = [
   svg(uwuMouth + eyesOpen),
   svg(openMouth + eyesOpen),
   svg(openMouth + eyesMischief),
+  svg(`
+    <circle cx="0" cy="0" r="47" stroke="#fff5" fill="none" stroke-width="6"/>
+    <circle cx="0" cy="0" r="30" fill="#fff5" />
+    `),
 ];
 
 const canvas = document.createElement("canvas");
@@ -35,11 +39,7 @@ Promise.all(
       img.onload = r;
       img.src = "data:image/svg+xml," + encodeURIComponent(svg);
     }).then(() => {
-      ctx.save();
-
       ctx.drawImage(img, (size + margin) * i, 0, size, size);
-
-      ctx.restore();
     });
   })
 ).then(() => {
@@ -60,4 +60,11 @@ const textures = svgs.map((_, i, { length }) => {
   return texture;
 });
 
-export const [faceBackgroundBlue, faceBackgroundRed, faceUwU] = textures;
+export const [
+  faceBackgroundBlue,
+  faceBackgroundRed,
+  faceUwU,
+  faceOpenMouth,
+  faceMischief,
+  target,
+] = textures;

@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Terry } from "./Terry/Terry";
 import * as THREE from "three";
 import { Note } from "./PlayTrack/Note";
+import { target } from "./texture/sprite";
 
 export const Scene = (props: React.ComponentProps<"div">) => {
   const containerDom = {
@@ -74,7 +75,9 @@ export const Scene = (props: React.ComponentProps<"div">) => {
       </div>
 
       <Canvas
-        dpr={2}
+        dpr={[1, 2]}
+        gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
+        linear
         ref={containerDom.container}
         style={{
           position: "absolute",
@@ -204,12 +207,18 @@ const Inside = ({
   return (
     <group>
       <scene name="playTrack">
-        <orthographicCamera position={[0, 0, -1]} />
+        <orthographicCamera position={[0, 0, 1]} />
+
+        <sprite position={[-0.4, 0, 0]} scale={[1.4, 1.4, 14]}>
+          <spriteMaterial map={target} transparent />
+        </sprite>
 
         {Array.from({ length: 100 }, (_, i) => (
-          <Note key={i} stance={""} kind={"ring"} position={[i * 0.6, 0, 0]} />
+          <Note key={i} stance="uwu" kind={"ring"} position={[i * 0.6, 0, 0]} />
         ))}
-        <Note stance={""} kind={"skin"} position={[-3, 0, 0]} />
+        <Note stance="mischief" kind={"skin"} position={[3, 0, 0]} />
+        <Note stance="openMouth" kind={"skin"} position={[4, 0, 0]} />
+        <Note stance="openMouth" kind={"skin"} position={[0, 0, 0]} />
       </scene>
 
       <scene name="terry">

@@ -5,13 +5,18 @@ import {
   faceBackgroundBlue,
   faceBackgroundRed,
   faceUwU,
+  faceOpenMouth,
+  faceMischief,
 } from "../texture/sprite";
 
 export const Note = ({
   stance,
   kind,
   ...props
-}: { stance: string; kind: InputKind } & React.ComponentProps<"group">) => {
+}: {
+  stance: "uwu" | "openMouth" | "mischief";
+  kind: InputKind;
+} & React.ComponentProps<"group">) => {
   return (
     <group {...props}>
       <sprite>
@@ -19,7 +24,13 @@ export const Note = ({
         {kind === "skin" && <spriteMaterial map={faceBackgroundRed} />}
       </sprite>
       <sprite>
-        <spriteMaterial map={faceUwU} />
+        <spriteMaterial
+          map={
+            (stance === "mischief" && faceMischief) ||
+            (stance === "openMouth" && faceOpenMouth) ||
+            faceUwU
+          }
+        />
       </sprite>
     </group>
   );

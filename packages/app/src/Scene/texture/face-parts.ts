@@ -1,4 +1,4 @@
-import { black, mouth, red } from "./theme";
+import { black, mouth } from "./theme";
 
 const lineWidth = 2.5;
 
