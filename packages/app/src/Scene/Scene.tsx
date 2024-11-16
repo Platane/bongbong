@@ -6,15 +6,21 @@ import { PlayTrack } from "./PlayTrack/PlayTrack";
 import { Hit, Input, Track } from "../state/game";
 
 type Props = {
+  inputs: Input[];
   hits: Hit[];
   nextNoteIndex: number;
   track: Track;
+  score: number;
+  combo: number;
+  multiplier: number;
 };
 
 export const Scene = ({
   track,
   hits,
   nextNoteIndex,
+  score,
+  combo,
   ...props
 }: Props & React.ComponentProps<"div">) => {
   const containerDom = {
@@ -64,13 +70,16 @@ export const Scene = ({
           flexDirection: "row",
         }}
       >
-        <div
+        <Score
+          id="score"
           style={{
             width: "min(  300px , 30%  )",
             height: "100%",
             backgroundColor: "#8a8",
             flexGrow: "10",
           }}
+          score={score}
+          combo={combo}
         />
         <div
           id="playTrack"
@@ -98,7 +107,7 @@ export const Scene = ({
           zIndex: 2,
         }}
       >
-        <Inside
+        <InsideCanvas
           containerDom={containerDom}
           track={track}
           hits={hits}
@@ -109,7 +118,7 @@ export const Scene = ({
   );
 };
 
-const Inside = ({
+const InsideCanvas = ({
   containerDom,
   ...props
 }: Props & {
@@ -232,3 +241,35 @@ const Inside = ({
     </group>
   );
 };
+
+const Score = ({
+  score,
+  combo,
+  ...props
+}: {
+  score: number;
+  combo: number;
+} & React.ComponentProps<"div">) => (
+  <div
+    {...props}
+    style={{
+      ...props.style,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "10px 20px",
+    }}
+  >
+    <span style={{ fontFamily: "cursive", fontSize: "50px" }}>{combo}</span>
+    <span
+      style={{
+        alignSelf: "flex-start",
+        fontFamily: "cursive",
+        fontSize: "20px",
+      }}
+    >
+      {score}
+    </span>
+  </div>
+);

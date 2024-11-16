@@ -22,7 +22,10 @@ export const GameScreen = ({ game }: { game: Game }) => {
       game.track.audio.removeEventListener("timeupdate", onTimeUpdate);
   }, [game.track.audio]);
 
-  const { score, multiplier } = React.useMemo(() => getScore(hits), [hits]);
+  const { score, multiplier, combo } = React.useMemo(
+    () => getScore(hits),
+    [hits]
+  );
 
   console.log(score, multiplier);
 
@@ -31,8 +34,7 @@ export const GameScreen = ({ game }: { game: Game }) => {
       <Scene
         style={{ maxWidth: "800px", width: "100%", height: "500px" }}
         {...game}
-        hits={hits}
-        nextNoteIndex={nextNoteIndex}
+        {...{ hits, nextNoteIndex, score, multiplier, combo }}
       />
       <PlayTrack {...game} />
     </>

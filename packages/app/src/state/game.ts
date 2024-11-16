@@ -155,21 +155,21 @@ const mergeMissUnwarranted = (hits: Hit[]) => {
 };
 
 export const getScore = (hits: Hit[]) => {
-  let chain = 0;
+  let combo = 0;
   let score = 0;
 
   const getMultiplier = (chain: number) => Math.min(10, Math.ceil(chain / 10));
 
   for (const h of hits) {
     if (h.type === "hit") {
-      chain++;
-      score += getMultiplier(chain) * (h.timing === "good" ? 10 : 5);
+      combo++;
+      score += getMultiplier(combo) * (h.timing === "good" ? 100 : 50);
     }
 
     if (h.type === "miss" || h.type === "unwarranted") {
-      chain = 0;
+      combo = 0;
     }
   }
 
-  return { multiplier: getMultiplier(chain), score };
+  return { multiplier: getMultiplier(combo), combo, score };
 };
