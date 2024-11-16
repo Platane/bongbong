@@ -120,22 +120,6 @@ const Inside = ({
     terry: React.RefObject<HTMLElement | null>;
   };
 }) => {
-  // const renderTargets = React.useMemo(() => {
-  //   const playTrack = new THREE.WebGLRenderTarget(128, 128);
-  //   const background = new THREE.WebGLRenderTarget(128, 128);
-  //   const terry = new THREE.WebGLRenderTarget(128, 128);
-
-  //   return { playTrack, background, terry };
-  // }, []);
-  // React.useEffect(
-  //   () => () => {
-  //     renderTargets.terry.dispose();
-  //     renderTargets.background.dispose();
-  //     renderTargets.playTrack.dispose();
-  //   },
-  //   [renderTargets]
-  // );
-
   useFrame(({ gl: renderer, scene: globalScene }) => {
     renderer.autoClear = false;
 

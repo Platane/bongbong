@@ -36,9 +36,8 @@ export type Hit =
   | { type: "unwarranted"; time: number; input: Input };
 
 const GOOD_THRESHOLD = 0.05;
-const OK_THRESHOLD = 0.2;
-const MERGE_THRESHOLD = 0.3;
-
+const OK_THRESHOLD = 0.1;
+const MERGE_THRESHOLD = 0.2;
 export const getHits = (
   partition: Partition,
   inputs: Input[],
