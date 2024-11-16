@@ -1,21 +1,22 @@
-import { createRoot } from "react-dom/client";
 import React from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Terry } from "./Terry/Terry";
 import * as THREE from "three";
-import { Note } from "./PlayTrack/Note";
-import { target } from "./texture/sprite";
 import { PlayTrack } from "./PlayTrack/PlayTrack";
-import { Input, Track } from "../state/game";
+import { Hit, Input, Track } from "../state/game";
+
+type Props = {
+  hits: Hit[];
+  nextNoteIndex: number;
+  track: Track;
+};
 
 export const Scene = ({
   track,
-  inputs,
+  hits,
+  nextNoteIndex,
   ...props
-}: {
-  track: Track;
-  inputs: Input[];
-} & React.ComponentProps<"div">) => {
+}: Props & React.ComponentProps<"div">) => {
   const containerDom = {
     container: React.useRef<HTMLCanvasElement | null>(null),
     playTrack: React.useRef<HTMLDivElement | null>(null),
@@ -97,7 +98,12 @@ export const Scene = ({
           zIndex: 2,
         }}
       >
-        <Inside containerDom={containerDom} track={track} inputs={inputs} />
+        <Inside
+          containerDom={containerDom}
+          track={track}
+          hits={hits}
+          nextNoteIndex={nextNoteIndex}
+        />
       </Canvas>
     </div>
   );
@@ -105,11 +111,8 @@ export const Scene = ({
 
 const Inside = ({
   containerDom,
-  track,
-  inputs,
-}: {
-  track: Track;
-  inputs: Input[];
+  ...props
+}: Props & {
   containerDom: {
     container: React.RefObject<HTMLElement | null>;
     playTrack: React.RefObject<HTMLElement | null>;
@@ -222,12 +225,24 @@ const Inside = ({
       <scene name="playTrack">
         <orthographicCamera position={[0, 0, 1]} />
 
-        <PlayTrack track={track} inputs={inputs} />
+        <PlayTrack {...props} />
       </scene>
 
       <scene name="terry">
         <perspectiveCamera position={[0, 1, 7]} far={100} near={1} />
-        <Terry />
+        <Terry
+          pose={{
+            face: "happy",
+            leftHand: {
+              vy: 0,
+              vx: 0,
+            },
+            rightHand: {
+              vy: 0,
+              vx: 0,
+            },
+          }}
+        />
         {lightRig}
       </scene>
     </group>

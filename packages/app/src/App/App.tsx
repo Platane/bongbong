@@ -2,7 +2,7 @@ import * as React from "react";
 import { Remote } from "./Remote";
 import { Host } from "./Host";
 import { Scene } from "../Scene/Scene";
-import { Game } from "../state/game";
+import { Game, InputKind } from "../state/game";
 import { GameScreen } from "./GameScreen";
 import { tracks } from "../state/trackList";
 
@@ -22,24 +22,35 @@ export const App = () => {
         inputs: [],
       };
     });
+    const addInput = (kind: InputKind) =>
+      setGame((g) => ({
+        ...g,
+        inputs: [
+          ...g.inputs,
+          {
+            kind,
+            time: game.track.audio.currentTime,
+            hand: "left",
+          },
+        ],
+      }));
 
     React.useEffect(() => {
-      const interval = setInterval(() => {
-        setGame((g) => ({
-          ...g,
-          inputs: [
-            ...g.inputs,
-            {
-              kind: "ring",
-              time: game.track.audio.currentTime,
-              hand: "left",
-            },
-          ],
-        }));
-      }, 1200);
-
-      return () => clearInterval(interval);
-    }, [game]);
+      let i = 0;
+      let cancel = 0;
+      const loop = () => {
+        while (
+          game.track.partition[i] &&
+          game.track.partition[i].time < game.track.audio.currentTime
+        ) {
+          addInput(game.track.partition[i].kind);
+          i++;
+        }
+        cancel = requestAnimationFrame(loop);
+      };
+      loop();
+      return () => cancelAnimationFrame(cancel);
+    }, [game.track.audio]);
 
     return (
       <>

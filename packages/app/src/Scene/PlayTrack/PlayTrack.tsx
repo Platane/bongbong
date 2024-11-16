@@ -1,11 +1,19 @@
-import { Game, hitTest, Input, Partition } from "../../state/game";
+import { Hit, Game, getHits, Input, Partition, Track } from "../../state/game";
 import * as THREE from "three";
 import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { Note } from "./Note";
 import { target } from "../texture/sprite";
 
-export const PlayTrack = ({ track, inputs }: Game & {}) => {
+export const PlayTrack = ({
+  track,
+  hits,
+  nextNoteIndex,
+}: {
+  track: Track;
+  hits: Hit[];
+  nextNoteIndex: number;
+}) => {
   const refGroup = React.useRef<THREE.Group | null>(null);
 
   const refLine = React.useRef<THREE.Group | null>(null);
@@ -22,7 +30,11 @@ export const PlayTrack = ({ track, inputs }: Game & {}) => {
       </sprite>
 
       <group ref={refLine}>
-        <PartitionMemoized inputs={inputs} partition={track.partition} />
+        <PartitionMemoized
+          hits={hits}
+          partition={track.partition}
+          nextNoteIndex={nextNoteIndex}
+        />
         <Note kind="ring" stance="mischief" />
       </group>
     </group>
@@ -32,16 +44,18 @@ export const PlayTrack = ({ track, inputs }: Game & {}) => {
 const timeToX = (t: number) => t * 4;
 
 const Partition = ({
-  inputs,
+  hits,
   partition,
+  nextNoteIndex,
 }: {
-  inputs: Input[];
+  hits: Hit[];
   partition: Partition;
+  nextNoteIndex: number;
 }) => {
   return (
     <>
       {partition.map((note, i) => {
-        if (inputs.some((i) => hitTest(note, i))) return null;
+        if (i < nextNoteIndex) return null;
 
         return (
           <Note
