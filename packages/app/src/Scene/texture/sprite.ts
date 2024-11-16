@@ -1,131 +1,63 @@
 import * as THREE from "three";
-import { eyesOpen, uwuMouth } from "./face-parts";
 import { black, blue, red } from "./theme";
+import {
+  circleHead,
+  eyesMischief,
+  eyesOpen,
+  openMouth,
+  svg,
+  uwuMouth,
+} from "./face-parts";
 
-const size = 256;
-
-const n = 4;
-
+const size = 512;
 const margin = size / 4;
 
+const svgs = [
+  svg(circleHead(red)),
+  svg(circleHead(blue)),
+  svg(uwuMouth + eyesOpen),
+  svg(openMouth + eyesOpen),
+  svg(openMouth + eyesMischief),
+];
+
 const canvas = document.createElement("canvas");
-canvas.width = size * n + margin * (n - 1);
+canvas.width = size * svgs.length + margin * (svgs.length - 1);
 canvas.height = size;
 const ctx = canvas.getContext("2d")!;
 
-ctx.scale(size / 100, size / 100);
+const master = new THREE.CanvasTexture(canvas);
+master.repeat.set(1 / (svgs.length + (margin / size) * (svgs.length - 1)), 1);
 
-const nextSprite = () => ctx.translate(100 + (margin / size) * 100, 0);
+Promise.all(
+  svgs.map((svg, i) => {
+    const img = new Image();
+    return new Promise((r) => {
+      img.onload = r;
+      img.src = "data:image/svg+xml," + encodeURIComponent(svg);
+    }).then(() => {
+      ctx.save();
 
-{
-  ctx.save();
-  ctx.translate(50, 50);
+      ctx.drawImage(img, (size + margin) * i, 0, size, size);
 
-  ctx.fillStyle = black;
-  ctx.beginPath();
-  ctx.arc(0, 0, 50, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = blue;
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 14, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-nextSprite();
-
-{
-  ctx.save();
-  ctx.translate(50, 50);
-
-  ctx.fillStyle = black;
-  ctx.beginPath();
-  ctx.arc(0, 0, 50, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = red;
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 14, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-nextSprite();
-
-{
-  ctx.save();
-  ctx.translate(50, 50);
-
-  ctx.fillStyle = black;
-  ctx.beginPath();
-  ctx.arc(0, 0, 50, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "limegreen";
-  ctx.beginPath();
-  ctx.arc(0, 0, 50 - 14, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-nextSprite();
-
-// face
-{
-  ctx.save();
-  ctx.translate(50, 50);
-
-  ctx.fillStyle = black;
-  ctx.fill(new Path2D(eyesOpen));
-
-  ctx.lineWidth = 2.2;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = black;
-  ctx.stroke(new Path2D(uwuMouth));
-
-  ctx.restore();
-}
+      ctx.restore();
+    });
+  })
+).then(() => {
+  master.source.needsUpdate = true;
+});
 
 canvas.style.width = "100%";
 document.body.appendChild(canvas);
 
-const master = new THREE.CanvasTexture(canvas);
-
-const textures = Array.from({ length: n }, (_, i) => {
+const textures = svgs.map((_, i, { length }) => {
   const texture = master.clone();
 
-  texture.repeat = new THREE.Vector2(1 / (n + (margin / size) * (n - 1)), 1);
   texture.offset = new THREE.Vector2(
-    (i * (1 + margin / size)) / (n + (margin / size) * (n - 1)),
+    (i * (1 + margin / size)) / (length + (margin / size) * (length - 1)),
     0
   );
 
   return texture;
 });
 
-export const [
-  faceBackgroundBlue,
-  faceBackgroundRed,
-  faceBackgroundGreen,
-  faceUwU,
-] = textures;
+export const [faceBackgroundBlue, faceBackgroundRed, faceUwU] = textures;

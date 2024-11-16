@@ -213,8 +213,9 @@ const Inside = ({
       </scene>
 
       <scene name="terry">
-        <perspectiveCamera position={[0, 0, 7]} far={100} near={1} />
+        <perspectiveCamera position={[0, 1, 7]} far={100} near={1} />
         <Terry />
+        {lightRig}
       </scene>
     </group>
   );
