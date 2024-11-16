@@ -12,7 +12,7 @@ export const App = () => {
   }
 
   if (location.pathname.match(/\/demo\/?$/)) {
-    const game = React.useMemo((): Game => {
+    const [game, setGame] = React.useState((): Game => {
       const audio = new Audio();
       audio.src = tracks[0].src;
       audio.play();
@@ -21,15 +21,21 @@ export const App = () => {
         track: { audio, ...tracks[0] },
         inputs: [],
       };
-    }, []);
+    });
 
     React.useEffect(() => {
       const interval = setInterval(() => {
-        game.inputs.push({
-          kind: "ring",
-          time: game.track.audio.currentTime,
-          hand: "left",
-        });
+        setGame((g) => ({
+          ...g,
+          inputs: [
+            ...g.inputs,
+            {
+              kind: "ring",
+              time: game.track.audio.currentTime,
+              hand: "left",
+            },
+          ],
+        }));
       }, 1200);
 
       return () => clearInterval(interval);
@@ -41,22 +47,34 @@ export const App = () => {
         <div style={{ position: "fixed", bottom: "0", left: "0" }}>
           <button
             onClick={() =>
-              game.inputs.push({
-                kind: "ring",
-                time: game.track.audio.currentTime,
-                hand: "left",
-              })
+              setGame((g) => ({
+                ...g,
+                inputs: [
+                  ...g.inputs,
+                  {
+                    kind: "ring",
+                    time: game.track.audio.currentTime,
+                    hand: "left",
+                  },
+                ],
+              }))
             }
           >
             ring
           </button>
           <button
             onClick={() =>
-              game.inputs.push({
-                kind: "skin",
-                time: game.track.audio.currentTime,
-                hand: "left",
-              })
+              setGame((g) => ({
+                ...g,
+                inputs: [
+                  ...g.inputs,
+                  {
+                    kind: "skin",
+                    time: game.track.audio.currentTime,
+                    hand: "left",
+                  },
+                ],
+              }))
             }
           >
             skin
@@ -79,7 +97,7 @@ export const App = () => {
 const Viewer = () => {
   const [roomId, createRoom] = React.useReducer(
     (r) => r ?? generateId(),
-    null as string | null,
+    null as string | null
   );
 
   if (roomId) return <Host roomId={roomId} />;

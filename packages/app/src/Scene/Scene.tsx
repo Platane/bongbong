@@ -5,8 +5,17 @@ import { Terry } from "./Terry/Terry";
 import * as THREE from "three";
 import { Note } from "./PlayTrack/Note";
 import { target } from "./texture/sprite";
+import { PlayTrack } from "./PlayTrack/PlayTrack";
+import { Input, Track } from "../state/game";
 
-export const Scene = (props: React.ComponentProps<"div">) => {
+export const Scene = ({
+  track,
+  inputs,
+  ...props
+}: {
+  track: Track;
+  inputs: Input[];
+} & React.ComponentProps<"div">) => {
   const containerDom = {
     container: React.useRef<HTMLCanvasElement | null>(null),
     playTrack: React.useRef<HTMLDivElement | null>(null),
@@ -88,7 +97,7 @@ export const Scene = (props: React.ComponentProps<"div">) => {
           zIndex: 2,
         }}
       >
-        <Inside containerDom={containerDom} />
+        <Inside containerDom={containerDom} track={track} inputs={inputs} />
       </Canvas>
     </div>
   );
@@ -96,7 +105,11 @@ export const Scene = (props: React.ComponentProps<"div">) => {
 
 const Inside = ({
   containerDom,
+  track,
+  inputs,
 }: {
+  track: Track;
+  inputs: Input[];
   containerDom: {
     container: React.RefObject<HTMLElement | null>;
     playTrack: React.RefObject<HTMLElement | null>;
@@ -156,7 +169,7 @@ const Inside = ({
       renderer.setScissor(left, bottom, width, height);
       renderer.setScissorTest(true);
 
-      const advance = 1.5;
+      const advance = 1.2;
 
       camera.top = 1;
       camera.bottom = -1;
@@ -209,16 +222,7 @@ const Inside = ({
       <scene name="playTrack">
         <orthographicCamera position={[0, 0, 1]} />
 
-        <sprite position={[-0.4, 0, 0]} scale={[1.4, 1.4, 14]}>
-          <spriteMaterial map={target} transparent />
-        </sprite>
-
-        {Array.from({ length: 100 }, (_, i) => (
-          <Note key={i} stance="uwu" kind={"ring"} position={[i * 0.6, 0, 0]} />
-        ))}
-        <Note stance="mischief" kind={"skin"} position={[3, 0, 0]} />
-        <Note stance="openMouth" kind={"skin"} position={[4, 0, 0]} />
-        <Note stance="openMouth" kind={"skin"} position={[0, 0, 0]} />
+        <PlayTrack track={track} inputs={inputs} />
       </scene>
 
       <scene name="terry">

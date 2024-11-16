@@ -26,6 +26,13 @@ export const Terry = ({
   });
 
   const [B, setB] = React.useState(() => new THREE.Vector3(3, 0, -1));
+  const [stance, setRandomStance] = React.useReducer(
+    () =>
+      (["uwu", "openMouth", "mischief"] as const)[
+        Math.floor(Math.random() * 3)
+      ],
+    "uwu"
+  );
 
   return (
     <group
@@ -37,6 +44,7 @@ export const Terry = ({
 
         const angle = Math.random() * 2 - 1;
 
+        setRandomStance();
         setB(
           new THREE.Vector3(1 + Math.cos(angle) * 2, 0, Math.sin(angle) * 2)
         );
@@ -47,7 +55,11 @@ export const Terry = ({
         rotation={[1.4, 0, 0.1]}
       >
         <Body />
-        <Face rotation={[-Math.PI / 2, 0, 0]} position={[0, 1, 0]} />
+        <Face
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 1, 0]}
+          stance={stance}
+        />
         <Arm
           A={new THREE.Vector3(0.85, 0.72, 0.2)}
           B={B}
