@@ -1,16 +1,11 @@
 import * as React from "react";
 import { Remote } from "./Remote";
 import { Host } from "./Host";
-import { Scene } from "../Scene/Scene";
-import { Game, InputKind } from "../state/game";
-import { GameScreen } from "./GameScreen";
+import type { Game, InputKind } from "../state/game";
+import { GameScreen } from "../GameScreen/GameScreen";
 import { tracks } from "../state/trackList";
 
 export const App = () => {
-  if (location.pathname.match(/\/scene\/?$/)) {
-    return <Scene style={{ width: "100vw", height: "100vh" }} />;
-  }
-
   if (location.pathname.match(/\/demo\/?$/)) {
     const [game, setGame] = React.useState((): Game => {
       const audio = new Audio();
@@ -54,7 +49,13 @@ export const App = () => {
 
     return (
       <>
-        <GameScreen game={game} />
+        <GameScreen
+          game={game}
+          style={{
+            width: "min(100%,1200px)",
+            height: "min( calc( 100vh - 200px ) ,650px)",
+          }}
+        />
         <div style={{ position: "fixed", bottom: "0", left: "0" }}>
           <button
             onClick={() =>

@@ -6,7 +6,7 @@ import { PlayTrack } from "../PlayTrack/PlayTrack";
 import { tracks } from "../state/trackList";
 import { State as HostState } from "../state/hostState";
 import { Scene } from "../Scene/Scene";
-import { GameScreen } from "./GameScreen";
+import { GameScreen } from "../GameScreen/GameScreen";
 
 export const Host = ({ roomId }: { roomId: string }) => {
   const state = useHostState(roomId);

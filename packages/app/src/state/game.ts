@@ -158,7 +158,8 @@ export const getScore = (hits: Hit[]) => {
   let combo = 0;
   let score = 0;
 
-  const getMultiplier = (chain: number) => Math.min(10, Math.ceil(chain / 10));
+  const getMultiplier = (chain: number) =>
+    Math.min(10, 1 + Math.floor(chain / 6));
 
   for (const h of hits) {
     if (h.type === "hit") {
