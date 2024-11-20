@@ -1,7 +1,6 @@
 import * as React from "react";
-import { getHits, getScore, type Game, type Track } from "../state/game";
+import { getHits, getScore, type Game } from "../state/game";
 import { PlayTrack } from "../PlayTrack/PlayTrack";
-import { Scene } from "../Scene/Scene";
 import { Layout } from "./Layout";
 import { ScorePanel } from "./ScorePanel";
 import { PlayTrackPanel } from "../Scene/PlayTrack/PlayTrackPanel";
