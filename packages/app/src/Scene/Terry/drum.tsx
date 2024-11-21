@@ -5,7 +5,7 @@ export const createDrumGeometry = () => {
 
   // constant
 
-  const radialSegments = 18;
+  const radialSegments = 24;
   const heightSegments = 10;
 
   const radius = 0.7;
@@ -128,4 +128,3 @@ export const createDrumGeometry = () => {
 
   return geometry;
 };
-const drumGeometry = createDrumGeometry();

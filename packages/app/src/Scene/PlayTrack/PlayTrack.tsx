@@ -35,7 +35,6 @@ export const PlayTrack = ({
           partition={track.partition}
           nextNoteIndex={nextNoteIndex}
         />
-        <Note kind="ring" stance="mischief" />
       </group>
     </group>
   );

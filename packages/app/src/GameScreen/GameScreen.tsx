@@ -39,6 +39,7 @@ export const GameScreen = ({
           <ScorePanel
             score={score}
             combo={combo}
+            inputs={game.inputs}
             style={{ width: "100%", height: "100%" }}
           />
         }

@@ -84,11 +84,13 @@ export const createHostState = (roomKey: string) => {
       };
 
       if (state.game && audioTracker) {
-        const timestamp = (Date.now() - ping / 2) / 1000;
+        const now = Date.now();
+        const timestamp = (now - ping / 2) / 1000;
         const input = {
           kind: data.kind,
           hand: data.hand,
           time: audioTracker.getTime(timestamp),
+          timestamp,
         };
 
         state = {

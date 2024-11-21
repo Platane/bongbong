@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Remote } from "./Remote";
 import { Host } from "./Host";
-import type { Game, InputKind } from "../state/game";
+import type { Game, Hand, InputKind } from "../state/game";
 import { GameScreen } from "../GameScreen/GameScreen";
 import { tracks } from "../state/trackList";
 
@@ -17,7 +17,7 @@ export const App = () => {
         inputs: [],
       };
     });
-    const addInput = (kind: InputKind) =>
+    const addInput = (kind: InputKind, hand: Hand = "left") =>
       setGame((g) => ({
         ...g,
         inputs: [
@@ -26,6 +26,7 @@ export const App = () => {
             kind,
             time: game.track.audio.currentTime,
             hand: "left",
+            timestamp: Date.now() / 1000,
           },
         ],
       }));
@@ -57,40 +58,8 @@ export const App = () => {
           }}
         />
         <div style={{ position: "fixed", bottom: "0", left: "0" }}>
-          <button
-            onClick={() =>
-              setGame((g) => ({
-                ...g,
-                inputs: [
-                  ...g.inputs,
-                  {
-                    kind: "ring",
-                    time: game.track.audio.currentTime,
-                    hand: "left",
-                  },
-                ],
-              }))
-            }
-          >
-            ring
-          </button>
-          <button
-            onClick={() =>
-              setGame((g) => ({
-                ...g,
-                inputs: [
-                  ...g.inputs,
-                  {
-                    kind: "skin",
-                    time: game.track.audio.currentTime,
-                    hand: "left",
-                  },
-                ],
-              }))
-            }
-          >
-            skin
-          </button>
+          <button onClick={() => addInput("ring")}>ring</button>
+          <button onClick={() => addInput("skin")}>skin</button>
         </div>
       </>
     );

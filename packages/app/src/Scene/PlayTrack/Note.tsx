@@ -20,8 +20,8 @@ export const Note = ({
   return (
     <group {...props}>
       <sprite>
-        {kind === "ring" && <spriteMaterial map={faceBackgroundBlue} />}
-        {kind === "skin" && <spriteMaterial map={faceBackgroundRed} />}
+        {kind === "ring" && <spriteMaterial map={faceBackgroundRed} />}
+        {kind === "skin" && <spriteMaterial map={faceBackgroundBlue} />}
       </sprite>
       <sprite>
         <spriteMaterial
