@@ -1,19 +1,12 @@
-import { Hit, Game, getHits, Input, Partition, Track } from "../../state/game";
+import type { Hit, Partition, Track } from "../../state/game";
 import * as THREE from "three";
 import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { Note } from "./Note";
 import { target } from "../texture/sprite";
+import { HitMarkers } from "./HitMarkers";
 
-export const PlayTrack = ({
-  track,
-  hits,
-  nextNoteIndex,
-}: {
-  track: Track;
-  hits: Hit[];
-  nextNoteIndex: number;
-}) => {
+export const PlayTrack = ({ track, hits }: { track: Track; hits: Hit[] }) => {
   const refGroup = React.useRef<THREE.Group | null>(null);
 
   const refLine = React.useRef<THREE.Group | null>(null);
@@ -25,47 +18,56 @@ export const PlayTrack = ({
 
   return (
     <group ref={refGroup}>
-      <sprite position={[0, 0, 0]} scale={[1.5, 1.5, 1.5]}>
-        <spriteMaterial map={target} />
-      </sprite>
+      <Target />
 
       <group ref={refLine}>
-        <PartitionMemoized
-          hits={hits}
-          partition={track.partition}
-          nextNoteIndex={nextNoteIndex}
-        />
+        <PartitionMemoized hits={hits} partition={track.partition} />
       </group>
+
+      <HitMarkersMemoized hits={hits} />
     </group>
   );
 };
+
+const Target = () => (
+  <sprite position={[0, 0, 0]} scale={[1.5, 1.5, 1.5]}>
+    <spriteMaterial map={target} />
+  </sprite>
+);
 
 const timeToX = (t: number) => t * 4;
 
 const Partition = ({
   hits,
   partition,
-  nextNoteIndex,
 }: {
   hits: Hit[];
   partition: Partition;
-  nextNoteIndex: number;
 }) => {
   return (
     <>
       {partition.map((note, i) => {
-        if (i < nextNoteIndex) return null;
-
-        return (
-          <Note
-            position={[timeToX(note.time), 0, 0]}
-            key={i}
-            stance={"uwu"}
-            kind={note.kind}
-          />
+        const hit = hits.find(
+          (h) => (h.type === "hit" || h.type === "miss") && h.note === note
         );
+
+        if (hit?.type === "hit") return null;
+
+        if (!hit || hit.type === "miss")
+          return (
+            <Note
+              miss={hit?.type === "miss"}
+              position={[timeToX(note.time), 0, 0]}
+              key={i}
+              stance={"uwu"}
+              kind={note.kind}
+            />
+          );
+
+        return null;
       })}
     </>
   );
 };
 const PartitionMemoized = React.memo(Partition);
+const HitMarkersMemoized = React.memo(HitMarkers);

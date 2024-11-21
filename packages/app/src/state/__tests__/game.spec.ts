@@ -11,19 +11,35 @@ test("get hits", () => {
       kind: "ring",
       time: 0,
       hand: "left",
+      timestamp: 0,
     },
     {
       kind: "ring",
       time: 1.08,
       hand: "left",
+      timestamp: 0,
     },
   ];
 
   const { hits } = getHits(partition, inputs, 999999);
 
   expect(hits).toEqual([
-    { kind: "ring", time: 0, timing: "good", type: "hit", input: inputs[0] },
-    { kind: "ring", time: 1, timing: "ok", type: "hit", input: inputs[1] },
+    {
+      kind: "ring",
+      time: 0,
+      timing: "good",
+      type: "hit",
+      input: inputs[0],
+      note: partition[0],
+    },
+    {
+      kind: "ring",
+      time: 1,
+      timing: "ok",
+      type: "hit",
+      input: inputs[1],
+      note: partition[1],
+    },
   ]);
 });
 
@@ -34,13 +50,20 @@ test("merge unwanted and miss", () => {
       kind: "ring",
       time: 3.11,
       hand: "left",
+      timestamp: 0,
     },
   ];
 
   const { hits } = getHits(partition, inputs, 999999);
 
   expect(hits).toEqual([
-    { kind: "ring", time: 3, type: "miss", missedInput: inputs[0] },
+    {
+      kind: "ring",
+      time: 3,
+      type: "miss",
+      missedInput: inputs[0],
+      note: partition[0],
+    },
   ]);
 });
 
@@ -51,12 +74,19 @@ test("merge unwanted and miss", () => {
       kind: "ring",
       time: 3.11,
       hand: "left",
+      timestamp: 0,
     },
   ];
 
   const { hits } = getHits(partition, inputs, 3);
 
   expect(hits).toEqual([
-    { kind: "ring", time: 3, type: "miss", missedInput: inputs[0] },
+    {
+      kind: "ring",
+      time: 3,
+      type: "miss",
+      missedInput: inputs[0],
+      note: partition[0],
+    },
   ]);
 });

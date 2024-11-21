@@ -36,13 +36,20 @@ export type Game = {
 };
 
 export type Hit =
-  | { kind: InputKind; type: "miss"; time: number; missedInput: Input | null }
+  | {
+      kind: InputKind;
+      type: "miss";
+      time: number;
+      missedInput: Input | null;
+      note: Note;
+    }
   | {
       kind: InputKind;
       type: "hit";
       timing: "good" | "ok";
       time: number;
       input: Input;
+      note: Note;
     }
   | { type: "unwarranted"; time: number; input: Input };
 
@@ -84,19 +91,40 @@ export const getHits = (
           : "ok";
 
       if (inputs[i].kind !== partition[j].kind) {
-        hits.push({ ...partition[j], type: "miss", missedInput: inputs[i] });
+        hits.push({
+          ...partition[j],
+          type: "miss",
+          missedInput: inputs[i],
+          note: partition[j],
+        });
       } else {
-        hits.push({ ...partition[j], type: "hit", timing, input: inputs[i] });
+        hits.push({
+          ...partition[j],
+          type: "hit",
+          timing,
+          input: inputs[i],
+          note: partition[j],
+        });
       }
       i++;
     } else {
-      hits.push({ ...partition[j], type: "miss", missedInput: null });
+      hits.push({
+        ...partition[j],
+        type: "miss",
+        missedInput: null,
+        note: partition[j],
+      });
     }
   }
 
   for (; i < inputs.length; i++) {
     while (partition[j] && partition[j].time < inputs[i].time - OK_THRESHOLD) {
-      hits.push({ ...partition[j], type: "miss", missedInput: null });
+      hits.push({
+        ...partition[j],
+        type: "miss",
+        missedInput: null,
+        note: partition[j],
+      });
 
       j++;
     }
@@ -111,9 +139,20 @@ export const getHits = (
           : "ok";
 
       if (inputs[i].kind !== partition[j].kind) {
-        hits.push({ ...partition[j], type: "miss", missedInput: inputs[i] });
+        hits.push({
+          ...partition[j],
+          type: "miss",
+          missedInput: inputs[i],
+          note: partition[j],
+        });
       } else {
-        hits.push({ ...partition[j], type: "hit", timing, input: inputs[i] });
+        hits.push({
+          ...partition[j],
+          type: "hit",
+          timing,
+          input: inputs[i],
+          note: partition[j],
+        });
       }
       j++;
     } else {

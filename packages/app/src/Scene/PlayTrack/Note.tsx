@@ -12,16 +12,26 @@ import {
 export const Note = ({
   stance,
   kind,
+  miss,
   ...props
 }: {
+  miss?: boolean;
   stance: "uwu" | "openMouth" | "mischief";
   kind: InputKind;
 } & React.ComponentProps<"group">) => {
+  const colorProps: React.ComponentProps<"spriteMaterial"> = {
+    ...(miss && { color: "#ccc", opacity: 0.8, transparent: true }),
+  };
+
   return (
     <group {...props}>
       <sprite>
-        {kind === "ring" && <spriteMaterial map={faceBackgroundRed} />}
-        {kind === "skin" && <spriteMaterial map={faceBackgroundBlue} />}
+        {kind === "ring" && (
+          <spriteMaterial {...colorProps} map={faceBackgroundRed} />
+        )}
+        {kind === "skin" && (
+          <spriteMaterial {...colorProps} map={faceBackgroundBlue} />
+        )}
       </sprite>
       <sprite>
         <spriteMaterial

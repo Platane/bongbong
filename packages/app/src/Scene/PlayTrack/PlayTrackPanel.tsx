@@ -4,17 +4,15 @@ import { Hit, Track } from "../../state/game";
 import * as THREE from "three";
 import { PlayTrack } from "./PlayTrack";
 
-type Props = {
-  hits: Hit[];
-  nextNoteIndex: number;
-  track: Track;
-};
-
 export const PlayTrackPanel = ({
-  style,
-  className,
+  hits,
+  track,
+
   ...props
-}: Props & {
+}: {
+  hits: Hit[];
+  track: Track;
+
   style?: React.CSSProperties;
   className?: string;
 }) => (
@@ -22,11 +20,10 @@ export const PlayTrackPanel = ({
     dpr={[1, 2]}
     gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
     linear
-    style={style}
-    className={className}
+    {...props}
   >
     <OrthoGraphicCamera />
-    <PlayTrack {...props} />
+    <PlayTrack hits={hits} track={track} />
   </Canvas>
 );
 
@@ -50,8 +47,10 @@ const OrthoGraphicCamera = (
 
     const advance = 1.2;
 
-    camera.top = 1;
-    camera.bottom = -1;
+    const h = 1.2;
+
+    camera.top = h;
+    camera.bottom = -h;
     camera.left = -advance;
     camera.right =
       width / (height / (camera.top - camera.bottom)) + camera.left;

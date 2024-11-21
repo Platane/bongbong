@@ -22,6 +22,9 @@ const svgs = [
     <circle cx="0" cy="0" r="47" stroke="#fff5" fill="none" stroke-width="6"/>
     <circle cx="0" cy="0" r="30" fill="#fff5" />
     `),
+  svg(
+    `<text style="font:bold 85px monospace" textLength="100" x="-50" y="30" >🐢</text>`
+  ),
 ];
 
 const canvas = document.createElement("canvas");
@@ -31,6 +34,7 @@ const ctx = canvas.getContext("2d")!;
 
 const master = new THREE.CanvasTexture(canvas);
 master.repeat.set(1 / (svgs.length + (margin / size) * (svgs.length - 1)), 1);
+master.generateMipmaps = true;
 
 Promise.all(
   svgs.map((svg, i) => {
@@ -46,8 +50,8 @@ Promise.all(
   master.source.needsUpdate = true;
 });
 
-// canvas.style.width = "100%";
-// document.body.appendChild(canvas);
+canvas.style.width = "100%";
+document.body.appendChild(canvas);
 
 const textures = svgs.map((_, i, { length }) => {
   const texture = master.clone();
@@ -67,4 +71,5 @@ export const [
   faceOpenMouth,
   faceMischief,
   target,
+  turtle,
 ] = textures;

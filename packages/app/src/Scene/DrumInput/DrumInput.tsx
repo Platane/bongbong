@@ -179,7 +179,7 @@ const createHalfDiskGeometry = () => {
 };
 
 const createArcGeometry = () => {
-  const h = 0.3;
+  const h = 0.36;
 
   const shape = new THREE.Shape();
   shape.moveTo(0, 1 + h);

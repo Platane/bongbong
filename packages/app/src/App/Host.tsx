@@ -2,10 +2,8 @@ import * as React from "react";
 import { useHostState } from "./useState";
 import type { Game, Track } from "../state/game";
 import QRCode from "react-qr-code";
-import { PlayTrack } from "../PlayTrack/PlayTrack";
 import { tracks } from "../state/trackList";
 import { State as HostState } from "../state/hostState";
-import { Scene } from "../Scene/Scene";
 import { GameScreen } from "../GameScreen/GameScreen";
 
 export const Host = ({ roomId }: { roomId: string }) => {
@@ -134,7 +132,7 @@ const Lobby = ({
           <li key={track.title} onMouseOver={() => setHoveredSrc(track.src)}>
             <button
               onClick={() => {
-                if (remotes.length === 0) {
+                if (remotes.length === 0 && false) {
                   alert(
                     "no remote connected yet. Please scan the qr code with your phone"
                   );
@@ -167,10 +165,17 @@ const Game = ({ game, roomId }: { game: Game; roomId: string }) => {
 
   return (
     <>
-      <a target="_blank" href={joinUrl}>
+      <a
+        target="_blank"
+        href={joinUrl}
+        style={{ position: "fixed", top: 0, zIndex: 10 }}
+      >
         join with a new remote
       </a>
-      <GameScreen game={game} />
+      <GameScreen
+        game={game}
+        style={{ width: "100vw", height: "min( 600px , 50vh )" }}
+      />
     </>
   );
 };

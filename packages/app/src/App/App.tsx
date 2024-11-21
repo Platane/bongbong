@@ -4,6 +4,7 @@ import { Host } from "./Host";
 import type { Game, Hand, InputKind } from "../state/game";
 import { GameScreen } from "../GameScreen/GameScreen";
 import { tracks } from "../state/trackList";
+import { PlayTrack } from "../PlayTrack/PlayTrack";
 
 export const App = () => {
   if (location.pathname.match(/\/demo\/?$/)) {
@@ -60,6 +61,7 @@ export const App = () => {
             height: "min( calc( 100vh - 200px ) ,650px)",
           }}
         />
+        <PlayTrack {...game} />
         <div style={{ position: "fixed", bottom: "0", left: "0" }}>
           <button onClick={() => addInput("ring")}>ring</button>
           <button onClick={() => addInput("skin")}>skin</button>

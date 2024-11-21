@@ -16,7 +16,7 @@ export const GameScreen = ({
   style?: React.CSSProperties;
   className?: string;
 }) => {
-  const { hits, nextNoteIndex } = useHits(game);
+  const { hits } = useHits(game);
 
   const { score, multiplier, combo } = React.useMemo(
     () => getScore(hits),
@@ -24,38 +24,33 @@ export const GameScreen = ({
   );
 
   return (
-    <>
-      <Layout
-        style={style}
-        className={className}
-        mascot={
-          <MascotPanel
-            combo={combo}
-            inputs={game.inputs}
-            style={{ width: "100%", height: "100%" }}
-          />
-        }
-        score={
-          <ScorePanel
-            score={score}
-            combo={combo}
-            inputs={game.inputs}
-            style={{ width: "100%", height: "100%" }}
-          />
-        }
-        playTrack={
-          <PlayTrackPanel {...game} nextNoteIndex={nextNoteIndex} hits={hits} />
-        }
-        playTrackHeader={
-          <ComboPanel
-            multiplier={multiplier}
-            combo={combo}
-            style={{ width: "100%", height: "100%" }}
-          />
-        }
-      />
-      <PlayTrack {...game} />
-    </>
+    <Layout
+      style={style}
+      className={className}
+      mascot={
+        <MascotPanel
+          combo={combo}
+          inputs={game.inputs}
+          style={{ width: "100%", height: "100%" }}
+        />
+      }
+      score={
+        <ScorePanel
+          score={score}
+          combo={combo}
+          inputs={game.inputs}
+          style={{ width: "100%", height: "100%" }}
+        />
+      }
+      playTrack={<PlayTrackPanel {...game} hits={hits} />}
+      playTrackHeader={
+        <ComboPanel
+          multiplier={multiplier}
+          combo={combo}
+          style={{ width: "100%", height: "100%" }}
+        />
+      }
+    />
   );
 };
 
