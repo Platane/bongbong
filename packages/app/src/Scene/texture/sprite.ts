@@ -50,8 +50,8 @@ Promise.all(
   master.source.needsUpdate = true;
 });
 
-canvas.style.width = "100%";
-document.body.appendChild(canvas);
+// canvas.style.width = "100%";
+// document.body.appendChild(canvas);
 
 const textures = svgs.map((_, i, { length }) => {
   const texture = master.clone();
