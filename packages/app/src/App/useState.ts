@@ -20,15 +20,15 @@ export const useHostState = (roomKey: string) => {
     return subscribe(() => {
       const game = getState().game;
 
-      if (lastGame !== game) lastGame = undefined;
-
-      if (!game) return;
-      const lastIndexIndex = game?.inputs.length ?? 0;
+      const lastIndexIndex = lastGame?.inputs.length ?? 0;
 
       lastGame = game;
 
+      if (!game) return;
+
       for (let i = lastIndexIndex; i < game.inputs.length; i++) {
         const input = game.inputs[i];
+
         if (input.kind === "skin") sound.kick();
         if (input.kind === "ring") sound.snare();
       }
