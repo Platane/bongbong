@@ -56,7 +56,10 @@ const SuccessEffect = ({
       const A = (Math.floor(Math.random() * 2) + 2.3) * 4;
       const a = Math.random() * Math.PI * 2;
 
-      return { vx: Math.sin(a) * A, vy: Math.cos(a) * A, x0: 0, y0: 0 };
+      const vx = Math.sin(a) * A;
+      const vy = Math.cos(a) * A;
+
+      return { vx, vy, x0: 0 + vx * 0.02, y0: 0 + vy * 0.02 };
     });
 
     geometry.setAttribute(
