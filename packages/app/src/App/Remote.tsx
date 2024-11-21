@@ -125,7 +125,7 @@ export const Remote = ({ roomId }: { roomId: string }) => {
             history
               .map(({ alpha }, i, { length }) => {
                 const x = i / length;
-                return x * 20 - 10 + "," + (10 + alpha / 100);
+                return x * 20 - 10 + "," + (10 + alpha / 200);
               })
               .join(" ")
           }
@@ -140,7 +140,7 @@ export const Remote = ({ roomId }: { roomId: string }) => {
             history
               .map(({ gamma }, i, { length }) => {
                 const x = i / length;
-                return x * 20 - 10 + "," + (15 + gamma / 100);
+                return x * 20 - 10 + "," + (15 + gamma / 200);
               })
               .join(" ")
           }
