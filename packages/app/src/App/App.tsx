@@ -24,8 +24,8 @@ export const App = () => {
           ...g.inputs,
           {
             kind,
+            hand,
             time: game.track.audio.currentTime,
-            hand: "left",
             timestamp: Date.now() / 1000,
           },
         ],
@@ -39,7 +39,10 @@ export const App = () => {
           game.track.partition[i] &&
           game.track.partition[i].time < game.track.audio.currentTime
         ) {
-          addInput(game.track.partition[i].kind);
+          addInput(
+            game.track.partition[i].kind,
+            Math.random() > 0.5 ? "left" : "right"
+          );
           i++;
         }
         cancel = requestAnimationFrame(loop);

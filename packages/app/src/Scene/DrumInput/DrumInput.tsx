@@ -86,6 +86,9 @@ const Drum = ({
   );
 };
 
+const easeInOutBack = (x: number) =>
+  x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+
 const ImpactHelper = ({
   input,
 }: {
@@ -97,14 +100,15 @@ const ImpactHelper = ({
     const t = Date.now() / 1000 - input.timestamp;
     const duration = 0.18;
 
-    const k = t / duration;
-
     if (!ref.current) return;
 
-    if (k > 1) {
+    if (t > duration) {
       ref.current.visible = false;
     } else {
       ref.current.visible = true;
+
+      const k = easeInOutBack(t / duration);
+
       ref.current.position.set(0, k * 0.1, 0);
 
       const s = 1 + k * 0.2;
@@ -132,7 +136,7 @@ const ImpactHelper = ({
         <mesh
           //
           position={[(input.hand === "left" ? 1 : -1) * 0.065, 1.001, 0]}
-          scale={[0.55 * (input.hand === "left" ? 1 : -1), 0.6, 0.6]}
+          scale={[0.53 * (input.hand === "left" ? 1 : -1), 0.56, 0.56]}
           geometry={arcGeometry}
         >
           <meshBasicMaterial color={blue} opacity={0.8} transparent />
