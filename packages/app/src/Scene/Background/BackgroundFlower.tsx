@@ -64,7 +64,7 @@ export const BackgroundFlower = ({
     for (let x = width; x--; )
       for (let y = height; y--; ) {
         const A = 0.3;
-        const theta = 4;
+        const theta = 0.5;
         const offset = (i * 17 + i ** 3 * 13 + i ** 7 * 11) % 3;
 
         positions.setXYZ(

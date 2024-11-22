@@ -33,7 +33,7 @@ export const GameScreen = ({
         <BackgroundPanel
           getT={() => {
             const period = game.track.bpm / 60;
-            return (game.track.audio.currentTime - game.track.offset) / period;
+            return (game.track.audio.currentTime - game.track.offset) * period;
           }}
         />
       }

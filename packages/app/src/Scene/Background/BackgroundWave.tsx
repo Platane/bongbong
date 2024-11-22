@@ -62,7 +62,7 @@ export const BackgroundWave = ({
     for (let y = height; y--; )
       for (let x = width; x--; ) {
         const A = 0.2;
-        const theta = 4;
+        const theta = 1;
         const offset = (i * 17 + i ** 3 * 13 + i ** 7 * 11) % 3;
 
         positions.setXYZ(
