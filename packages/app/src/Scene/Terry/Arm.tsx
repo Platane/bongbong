@@ -86,7 +86,7 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     group.add(tube);
     group.add(sphereA);
     group.add(sphereB);
-    for (const m of debugSpheres) group.add(m);
+    // for (const m of debugSpheres) group.add(m);
 
     const onFrame = (_: unknown, dt: number) => {
       if (!ref.current) return;

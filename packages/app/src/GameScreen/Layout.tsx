@@ -7,6 +7,7 @@ export const Layout = ({
   playTrackHeader,
   background,
   inputHelper,
+  title,
 
   ...props
 }: {
@@ -17,6 +18,7 @@ export const Layout = ({
   playTrackHeader?: React.ReactElement;
   background?: React.ReactElement;
   inputHelper?: React.ReactElement;
+  title?: React.ReactElement;
 
   style?: React.CSSProperties;
   className?: string;
@@ -54,7 +56,7 @@ export const Layout = ({
     >
       <div
         style={{
-          width: "min(  300px , 80%  )",
+          width: "min(  320px , 80%  )",
           height: "100%",
           display: "flex",
         }}
@@ -77,14 +79,24 @@ export const Layout = ({
         style={{
           width: "min(  300px , 50%  )",
           height: "50px",
-          marginTop: "auto",
-          marginLeft: "auto",
           backgroundColor: "#7db417",
-
-          position: "relative",
+          position: "absolute",
+          bottom: 0,
+          right: 0,
         }}
       >
         {playTrackHeader}
+      </div>
+
+      <div
+        style={{
+          // backgroundColor: "#b49c17",
+          position: "absolute",
+          top: 0,
+          right: 0,
+        }}
+      >
+        {title}
       </div>
     </div>
 

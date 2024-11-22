@@ -61,6 +61,8 @@ const Camera = (props: React.ComponentProps<"perspectiveCamera">) => {
     const width = s.x;
     const height = s.y;
 
+    camera.lookAt(0, 1.6, 0);
+
     camera.updateProjectionMatrix();
   });
 

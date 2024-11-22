@@ -85,3 +85,17 @@ const ScoreText = styled.div`
 
   z-index: 2;
 `;
+
+export const Title = styled.div`
+  color: #fff;
+  font-size: 20px;
+  text-align: right;
+  padding: 8px;
+  letter-spacing: 1.8px;
+  font-weight: bolder;
+  font-family: monospace;
+  -webkit-text-stroke-width: 0.5;
+  -webkit-text-stroke-color: ${black};
+  text-shadow: ${generateTextShadowOutline({ color: black, width: 3 })},
+    3px 2px 5px #333;
+`;

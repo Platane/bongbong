@@ -52,7 +52,7 @@ export const Terry = ({
     >
       <group
         //
-        rotation={[1.4, 0, 0.1]}
+        rotation={[1.25, 0, 0.1]}
       >
         <Body />
         <Face
@@ -73,6 +73,15 @@ export const Terry = ({
           restingLength={1.8}
         />
       </group>
+
+      <mesh position={[0.4, -1, -0.4]}>
+        <cylinderGeometry args={[0.18, 0.18, 1.5]} />
+        <meshNormalMaterial />
+      </mesh>
+      <mesh position={[-0.4, -1, -0.4]}>
+        <cylinderGeometry args={[0.18, 0.18, 1.5]} />
+        <meshNormalMaterial />
+      </mesh>
     </group>
   );
 };
