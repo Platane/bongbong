@@ -9,8 +9,8 @@ import {
   uwuMouth,
 } from "./face-parts";
 
-const size = 200;
-const margin = size / 4;
+const size = 260;
+const margin = size / 8;
 
 const svgs = {
   faceBackgroundBlue: svg(circleHead(red)),

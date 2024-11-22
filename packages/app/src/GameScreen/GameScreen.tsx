@@ -8,6 +8,7 @@ import { ComboPanel } from "./ComboPanel";
 import { MascotPanel } from "../Scene/Mascot/MascotPanel";
 import { BackgroundFlower } from "../Scene/Background/BackgroundFlower";
 import { BackgroundPanel } from "../Scene/Background/BackgroundPanel";
+import { DrumInput } from "../Scene/DrumInput/DrumInput";
 
 export const GameScreen = ({
   game,
@@ -35,8 +36,10 @@ export const GameScreen = ({
             const period = game.track.bpm / 60;
             return (game.track.audio.currentTime - game.track.offset) * period;
           }}
+          style={{ opacity: 0.8 }}
         />
       }
+      inputHelper={<DrumInput inputs={game.inputs} />}
       mascot={
         <MascotPanel
           combo={combo}
@@ -48,11 +51,19 @@ export const GameScreen = ({
         <ScorePanel
           score={score}
           combo={combo}
-          inputs={game.inputs}
           style={{ width: "100%", height: "100%" }}
         />
       }
-      playTrack={<PlayTrackPanel track={game.track} hits={hits} />}
+      playTrack={
+        <PlayTrackPanel
+          track={game.track}
+          hits={hits}
+          style={{
+            backgroundColor: "#333",
+            boxShadow: "10px 0 10px 0 #000 inset",
+          }}
+        />
+      }
       playTrackHeader={
         <ComboPanel
           multiplier={multiplier}

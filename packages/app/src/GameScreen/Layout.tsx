@@ -6,6 +6,7 @@ export const Layout = ({
   playTrack,
   playTrackHeader,
   background,
+  inputHelper,
 
   ...props
 }: {
@@ -15,6 +16,7 @@ export const Layout = ({
   playTrack?: React.ReactElement;
   playTrackHeader?: React.ReactElement;
   background?: React.ReactElement;
+  inputHelper?: React.ReactElement;
 
   style?: React.CSSProperties;
   className?: string;
@@ -25,7 +27,6 @@ export const Layout = ({
       position: "relative",
       display: "flex",
       flexDirection: "column",
-      backgroundColor: "#f61",
       overflow: "hidden",
       ...props.style,
     }}
@@ -83,18 +84,52 @@ export const Layout = ({
         display: "flex",
         flexDirection: "row",
         boxShadow: " 0px 0px 0px 6px #000",
+        backgroundColor: "#444e",
         zIndex: 2,
       }}
     >
       <div
         style={{
-          width: "min( 30% , 300px )",
+          width: "min( 32% , 300px )",
           height: "100%",
           flexShrink: "0",
-          backgroundColor: "#33d2ee",
           position: "relative",
         }}
       >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+          }}
+        >
+          <div
+            style={{
+              marginLeft: "auto",
+              aspectRatio: 1,
+              maxWidth: "100%",
+              height: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                aspectRatio: 1,
+                maxHeight: "100%",
+                width: "100%",
+              }}
+            >
+              {inputHelper}
+            </div>
+          </div>
+        </div>
         {score}
       </div>
       <div
@@ -102,7 +137,6 @@ export const Layout = ({
           width: "100%",
           height: "100%",
           flexGrow: "1",
-          backgroundColor: "#e38",
           position: "relative",
         }}
       >

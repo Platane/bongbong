@@ -5,8 +5,9 @@ import * as THREE from "three";
 import { Terry } from "../Terry/Terry";
 
 export const MascotPanel = ({
-  style,
-  className,
+  combo,
+  inputs,
+
   ...props
 }: {
   combo: number;
@@ -20,8 +21,6 @@ export const MascotPanel = ({
     dpr={[1, 2]}
     gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
     linear
-    style={style}
-    className={className}
   >
     <Camera />
 

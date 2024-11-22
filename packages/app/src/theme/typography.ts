@@ -1,8 +1,8 @@
 export const generateTextShadowOutline = ({
   color,
   width,
-  n = 5 + Math.floor(Math.min(7, width)),
-  blur = Math.min(width * 0.3, 3),
+  n = 5 + Math.floor(Math.min(20, width * 1.6)),
+  blur = Math.min(width * 0.3, 1.5),
 }: {
   n?: number;
   color: string;

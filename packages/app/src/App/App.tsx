@@ -16,8 +16,10 @@ export const App = () => {
         <GameScreen
           game={game}
           style={{
-            width: "min(100%,1200px)",
-            height: "min( calc( 100vh - 200px ) ,650px)",
+            // width: "min(100%,1200px)",
+            // height: "min( calc( 100vh - 200px ) ,650px)",
+            width: "100vw",
+            height: "100vh",
           }}
         />
         {/* <PlayTrack {...game} /> */}

@@ -32,4 +32,5 @@ const Dot = styled.div`
   height: 20px;
   border-radius: 10px;
   background-color: #fff;
+  flex-shrink: 0;
 `;

@@ -32,7 +32,6 @@ export const BackgroundWave = ({
     const material = new THREE.PointsMaterial({
       size: 3,
       map: textures.roundWave,
-      //   blending: THREE.AdditiveBlending,
       depthTest: true,
       transparent: true,
       depthWrite: true,
@@ -69,7 +68,7 @@ export const BackgroundWave = ({
           i,
           (x - width * 0.5 + (y % 2) * 0.5) * 2,
           (y - height * 0.5) * 0.5 + Math.sin(t * theta + offset) * A,
-          -(y - height * 0.5) * 0.04 + 1
+          -(y - height * 0.5) * 0.05 + 1
         );
         i++;
       }
