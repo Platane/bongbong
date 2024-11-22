@@ -2,7 +2,7 @@ import * as THREE from "three";
 import type { Hit } from "../../state/game";
 import React from "react";
 import { useFrame } from "@react-three/fiber";
-import { turtle } from "../texture/sprite";
+import { textures } from "../texture/sprite";
 
 export const HitMarkers = ({ hits }: { hits: Hit[] }) => {
   const ANIMATION_DURATION = 3;
@@ -72,7 +72,7 @@ const SuccessEffect = ({
 
     const material = new THREE.PointsMaterial({
       size: 46,
-      map: turtle,
+      map: textures.turtle,
       blending: THREE.AdditiveBlending,
       depthTest: false,
       transparent: true,

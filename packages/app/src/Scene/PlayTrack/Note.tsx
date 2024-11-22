@@ -1,13 +1,7 @@
 import React from "react";
 import * as THREE from "three";
 import { InputKind } from "../../state/game";
-import {
-  faceBackgroundBlue,
-  faceBackgroundRed,
-  faceUwU,
-  faceOpenMouth,
-  faceMischief,
-} from "../texture/sprite";
+import { textures } from "../texture/sprite";
 
 export const Note = ({
   stance,
@@ -27,18 +21,18 @@ export const Note = ({
     <group {...props}>
       <sprite>
         {kind === "ring" && (
-          <spriteMaterial {...colorProps} map={faceBackgroundRed} />
+          <spriteMaterial {...colorProps} map={textures.faceBackgroundRed} />
         )}
         {kind === "skin" && (
-          <spriteMaterial {...colorProps} map={faceBackgroundBlue} />
+          <spriteMaterial {...colorProps} map={textures.faceBackgroundBlue} />
         )}
       </sprite>
       <sprite>
         <spriteMaterial
           map={
-            (stance === "mischief" && faceMischief) ||
-            (stance === "openMouth" && faceOpenMouth) ||
-            faceUwU
+            (stance === "mischief" && textures.faceMischief) ||
+            (stance === "openMouth" && textures.faceOpenMouth) ||
+            textures.faceUwU
           }
         />
       </sprite>

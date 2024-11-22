@@ -3,8 +3,8 @@ import * as THREE from "three";
 import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { Note } from "./Note";
-import { target } from "../texture/sprite";
 import { HitMarkers } from "./HitMarkers";
+import { textures } from "../texture/sprite";
 
 export const PlayTrack = ({ track, hits }: { track: Track; hits: Hit[] }) => {
   const refGroup = React.useRef<THREE.Group | null>(null);
@@ -31,7 +31,7 @@ export const PlayTrack = ({ track, hits }: { track: Track; hits: Hit[] }) => {
 
 const Target = () => (
   <sprite position={[0, 0, 0]} scale={[1.5, 1.5, 1.5]}>
-    <spriteMaterial map={target} />
+    <spriteMaterial map={textures.target} />
   </sprite>
 );
 

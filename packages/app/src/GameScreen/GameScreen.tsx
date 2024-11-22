@@ -6,6 +6,8 @@ import { ScorePanel } from "./ScorePanel";
 import { PlayTrackPanel } from "../Scene/PlayTrack/PlayTrackPanel";
 import { ComboPanel } from "./ComboPanel";
 import { MascotPanel } from "../Scene/Mascot/MascotPanel";
+import { BackgroundFlower } from "../Scene/Background/BackgroundFlower";
+import { BackgroundPanel } from "../Scene/Background/BackgroundPanel";
 
 export const GameScreen = ({
   game,
@@ -27,6 +29,14 @@ export const GameScreen = ({
     <Layout
       style={style}
       className={className}
+      background={
+        <BackgroundPanel
+          getT={() => {
+            const period = game.track.bpm / 60;
+            return (game.track.audio.currentTime - game.track.offset) / period;
+          }}
+        />
+      }
       mascot={
         <MascotPanel
           combo={combo}
@@ -42,7 +52,7 @@ export const GameScreen = ({
           style={{ width: "100%", height: "100%" }}
         />
       }
-      playTrack={<PlayTrackPanel {...game} hits={hits} />}
+      playTrack={<PlayTrackPanel track={game.track} hits={hits} />}
       playTrackHeader={
         <ComboPanel
           multiplier={multiplier}

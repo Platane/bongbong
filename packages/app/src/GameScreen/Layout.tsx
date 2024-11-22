@@ -5,6 +5,7 @@ export const Layout = ({
   score,
   playTrack,
   playTrackHeader,
+  background,
 
   ...props
 }: {
@@ -13,6 +14,7 @@ export const Layout = ({
   score?: React.ReactElement;
   playTrack?: React.ReactElement;
   playTrackHeader?: React.ReactElement;
+  background?: React.ReactElement;
 
   style?: React.CSSProperties;
   className?: string;
@@ -24,9 +26,21 @@ export const Layout = ({
       display: "flex",
       flexDirection: "column",
       backgroundColor: "#f61",
+      overflow: "hidden",
       ...props.style,
     }}
   >
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      {background}
+    </div>
     <div
       style={{
         width: "100%",
@@ -68,6 +82,8 @@ export const Layout = ({
         height: "min( 30% , 240px )",
         display: "flex",
         flexDirection: "row",
+        boxShadow: " 0px 0px 0px 6px #000",
+        zIndex: 2,
       }}
     >
       <div

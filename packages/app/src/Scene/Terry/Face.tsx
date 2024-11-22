@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
-import { faceMischief, faceOpenMouth, faceUwU } from "../texture/sprite";
+import { textures } from "../texture/sprite";
 
 export const Face = ({
   stance,
@@ -13,9 +13,9 @@ export const Face = ({
     <mesh {...props}>
       <meshStandardMaterial
         map={
-          (stance === "mischief" && faceMischief) ||
-          (stance === "openMouth" && faceOpenMouth) ||
-          faceUwU
+          (stance === "mischief" && textures.faceMischief) ||
+          (stance === "openMouth" && textures.faceOpenMouth) ||
+          textures.faceUwU
         }
         depthTest={false}
         transparent
