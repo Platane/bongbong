@@ -45,21 +45,32 @@ export const Layout = ({
     <div
       style={{
         width: "100%",
-        height: "min( 30% , 300px )",
+        height: "min( 30% , 330px )",
         display: "flex",
         flexDirection: "row",
         position: "relative",
+        gap: "8px",
       }}
     >
       <div
         style={{
-          width: "min(  200px , 80% , 90% )",
+          width: "min(  300px , 80%  )",
           height: "100%",
-          backgroundColor: "#154",
-          position: "relative",
+          display: "flex",
         }}
       >
-        {mascot}
+        <div
+          style={{
+            marginTop: "auto",
+            width: "100%",
+            maxHeight: "100%",
+            // backgroundColor: "#a54287",
+            aspectRatio: 1,
+            position: "relative",
+          }}
+        >
+          {mascot}
+        </div>
       </div>
 
       <div
@@ -80,7 +91,7 @@ export const Layout = ({
     <div
       style={{
         width: "100%",
-        height: "min( 30% , 240px )",
+        height: "min( 34% , 260px )",
         display: "flex",
         flexDirection: "row",
         boxShadow: " 0px 0px 0px 6px #000",
