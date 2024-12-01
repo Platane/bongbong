@@ -103,7 +103,7 @@ export const Layout = ({
     <div
       style={{
         width: "100%",
-        height: "min( 34% , 260px )",
+        height: "min( 10px, 34% , 260px )",
         display: "flex",
         flexDirection: "row",
         boxShadow: " 0px 0px 0px 6px #000",

@@ -113,10 +113,11 @@ const Scene = ({ getT }: { getT: () => number }) => {
       />
 
       <Waves
-        width={Math.ceil(viewport.width * 1.2) + 2}
-        height={3 * Math.ceil(viewport.width * 0.1)}
-        position={[0, viewport.y + 1.2 - viewport.width * 0.05, 0]}
-        rotation={[0, 0, -0.15]}
+        size={50 + Math.min(120, (viewport.width / viewport.height) * 80)}
+        width={viewport.width * 1.1}
+        height={viewport.width * 0.1 + 2}
+        position={[0, viewport.y + 2.5 - (viewport.width * 0.1 + 2) / 2, 0]}
+        rotation={[0, 0, -0.12]}
         getT={getT}
       />
     </>

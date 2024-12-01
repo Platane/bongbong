@@ -7,18 +7,20 @@ export const Waves = ({
   getT,
   width,
   height,
+  size = 100,
 
   ...props
 }: {
   getT: () => number;
   width: number;
   height: number;
+  size?: number;
 } & React.ComponentProps<"group">) => {
-  const W = 2.2;
-  const H = 0.5;
+  const dw = (size * 0.5) / 60;
+  const dh = (size * 0.3) / 60;
 
-  const nw = Math.ceil(width / W);
-  const nh = Math.ceil(height / H);
+  const nw = Math.ceil(width / dw);
+  const nh = Math.ceil(height / dh);
 
   const n = nw * nh;
 
@@ -44,16 +46,16 @@ export const Waves = ({
     const positions = geometry.getAttribute("position");
 
     let i = 0;
-    for (let y = nw; y--; )
-      for (let x = nh; x--; ) {
-        const A = H * 0.5;
+    for (let y = nh; y--; )
+      for (let x = nw; x--; ) {
+        const A = dh * 0.5;
         const theta = 1;
         const offset = (y * 45 + x ** 2 + (x * y) ** 3 * 13) % 17;
 
         positions.setXYZ(
           i,
-          (x - nw * 0.5 + (y % 2) * 0.5) * W,
-          (y - nh * 0.5) * H + Math.sin(t * theta + offset) * A,
+          (x - nw * 0.5 + (y % 2) * 0.5) * dw,
+          (y - nh * 0.5) * dh + Math.sin(t * theta + offset) * A,
           0
         );
         i++;
@@ -66,7 +68,7 @@ export const Waves = ({
     <group {...props}>
       <points geometry={geometry}>
         <pointsMaterial
-          size={140}
+          size={size}
           map={textures.roundWave}
           depthTest
           depthWrite
