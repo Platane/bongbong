@@ -6,7 +6,7 @@ import { ScorePanel, Title } from "./ScorePanel";
 import { PlayTrackPanel } from "../Scene/PlayTrack/PlayTrackPanel";
 import { ComboPanel } from "./ComboPanel";
 import { MascotPanel } from "../Scene/Mascot/MascotPanel";
-import { BackgroundFlower } from "../Scene/Background/BackgroundFlower";
+import { FlowerParticles } from "../Scene/Background/FlowerParticles";
 import { BackgroundPanel } from "../Scene/Background/BackgroundPanel";
 import { DrumInput } from "../Scene/DrumInput/DrumInput";
 

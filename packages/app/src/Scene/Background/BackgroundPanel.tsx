@@ -2,8 +2,8 @@ import React from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import { BackgroundFlower } from "./BackgroundFlower";
-import { BackgroundWave } from "./BackgroundWave";
+import { FlowerParticles } from "./FlowerParticles";
+import { Waves } from "./Waves";
 
 export const BackgroundPanel = ({
   getT,
@@ -19,24 +19,6 @@ export const BackgroundPanel = ({
     dpr={[1, 2]}
     gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
     linear
-    onCreated={({ scene }) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1;
-      canvas.height = 8;
-      const ctx = canvas.getContext("2d")!;
-
-      const linearGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      linearGradient.addColorStop(0, "#ffddbe");
-      linearGradient.addColorStop(1, "#ff7300");
-
-      ctx.fillStyle = linearGradient;
-
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const texture = new THREE.CanvasTexture(canvas);
-
-      scene.background = texture;
-    }}
     {...props}
   >
     <Scene getT={getT} />
@@ -44,22 +26,99 @@ export const BackgroundPanel = ({
 );
 
 const Scene = ({ getT }: { getT: () => number }) => {
-  const { size } = useThree();
+  const { size, camera } = useThree();
 
-  const width = 30;
-  const height = 30;
+  // React.useEffect(() => {
+  //   (camera as THREE.PerspectiveCamera).fov = Math.random() * 100;
+  // }, [size.width, size.height]);
+
+  const [perspectiveCamera] = React.useState(
+    () => new THREE.PerspectiveCamera()
+  );
+  const [orthographicCamera] = React.useState(
+    () => new THREE.OrthographicCamera()
+  );
+  const [backgroundTexture] = React.useState(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 8;
+    const ctx = canvas.getContext("2d")!;
+
+    const linearGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    linearGradient.addColorStop(0, "#ffddbe");
+    linearGradient.addColorStop(1, "#ff7300");
+
+    ctx.fillStyle = linearGradient;
+
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    return new THREE.CanvasTexture(canvas);
+  });
+
+  const [viewport, setViewport] = React.useState({
+    x: -10,
+    y: -10,
+    width: 20,
+    height: 20,
+  });
+
+  useFrame(({ gl, size, scene }) => {
+    const aspectRatio = size.height / size.width;
+
+    const width = size.width / 63;
+    const height = width * aspectRatio;
+
+    orthographicCamera.left = -width / 2;
+    orthographicCamera.right = width / 2;
+
+    orthographicCamera.bottom = -height / 2;
+    orthographicCamera.top = height / 2;
+
+    setViewport((v) => {
+      const v2 = {
+        x: orthographicCamera.left,
+        y: orthographicCamera.bottom,
+        width: orthographicCamera.right - orthographicCamera.left,
+        height: orthographicCamera.top - orthographicCamera.bottom,
+      };
+
+      if (
+        v2.x !== v.x ||
+        v2.y !== v.y ||
+        v2.width !== v.width ||
+        v2.height !== v.height
+      )
+        return v2;
+
+      return v;
+    });
+
+    orthographicCamera.position.set(0, 0, 1);
+    orthographicCamera.lookAt(new THREE.Vector3(0, 0, 0));
+
+    orthographicCamera.updateProjectionMatrix();
+
+    scene.background = backgroundTexture;
+
+    gl.render(scene, orthographicCamera);
+  }, 1);
+
   return (
     <>
-      <PerspectiveCamera position={[0, 0, 3]} />
-      <BackgroundFlower width={width} height={height} getT={getT} />;
-      <BackgroundWave
-        width={width}
-        height={10}
-        position={[0, -4.5, 0]}
-        rotation={[0, 0, -0.18]}
+      <FlowerParticles
+        width={Math.ceil(viewport.width) + 2}
+        height={Math.ceil(viewport.height) + 2}
+        getT={getT}
+        position={[viewport.x - 1, viewport.y - 1, 0]}
+      />
+
+      <Waves
+        width={Math.ceil(viewport.width * 1.2) + 2}
+        height={3 * Math.ceil(viewport.width * 0.1)}
+        position={[0, viewport.y + 1.2 - viewport.width * 0.05, 0]}
+        rotation={[0, 0, -0.15]}
         getT={getT}
       />
-      ;
     </>
   );
 };
