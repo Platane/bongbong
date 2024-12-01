@@ -25,5 +25,5 @@ export const onRequest: PagesFunction<{ bucket: R2Bucket }> = ({
     },
   });
 
-  return out.fetch(requestWithDifferentUrl as any, env);
+  return out.fetch(requestWithDifferentUrl as any, env) as any;
 };

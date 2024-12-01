@@ -12,7 +12,7 @@ export const createDrumGeometry = () => {
   const radiusBumpsRatio = 0.5;
   const height = 2;
 
-  const getRadius = (k) =>
+  const getRadius = (k: number) =>
     radius * ((1 - ((k - 0.5) * 2) ** 2) * radiusBumpsRatio + 1);
 
   // buffers
