@@ -4,10 +4,14 @@ import type { R2Bucket, ExportedHandler } from "@cloudflare/workers-types";
  * middleware to append access control related headers to the response
  */
 const cors =
-  <A extends Array<any>>(
-    f: (req: Request, ...args: A) => Response | Promise<Response>
+  <
+    Req extends { headers: Headers },
+    Res extends { headers: Headers },
+    A extends Array<any>
+  >(
+    f: (req: Req, ...args: A) => Res | Promise<Res>
   ) =>
-  async (req: Request, ...args: A) => {
+  async (req: Req, ...args: A) => {
     const res = await f(req, ...args);
 
     const origin = req.headers.get("origin");
@@ -33,7 +37,7 @@ const cors =
   };
 
 export default {
-  fetch: cors(async (req, { bucket }) => {
+  fetch: cors(async (req: Request, { bucket }) => {
     const url = new URL(req.url);
 
     const [, key] = url.pathname.match(/^\/room\/(\w*)\/?$/) ?? [];
