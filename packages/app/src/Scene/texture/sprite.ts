@@ -62,16 +62,24 @@ const master = new THREE.CanvasTexture(canvas);
 master.repeat.set(1 / (n + (margin / size) * (n - 1)), 1);
 master.generateMipmaps = true;
 
+export const getImageFromSvg = async (svg: string) => {
+  const img = new Image();
+  return new Promise((r) => {
+    img.onload = r;
+    img.src = "data:image/svg+xml," + encodeURIComponent(svg);
+  }).then(() => img);
+};
+
 Promise.all(
-  Object.values(svgs).map((svg, i) => {
-    const img = new Image();
-    return new Promise((r) => {
-      img.onload = r;
-      img.src = "data:image/svg+xml," + encodeURIComponent(svg);
-    }).then(() => {
-      ctx.drawImage(img, (size + margin) * i, 0, size, size);
-    });
-  })
+  Object.values(svgs).map(async (svg, i) =>
+    ctx.drawImage(
+      await getImageFromSvg(svg),
+      (size + margin) * i,
+      0,
+      size,
+      size
+    )
+  )
 ).then(() => {
   master.source.needsUpdate = true;
 });
