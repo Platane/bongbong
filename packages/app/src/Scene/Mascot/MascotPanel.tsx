@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Input } from "../../state/game";
 import * as THREE from "three";
 import { Terry } from "../Terry/Terry";
+import { Daruma } from "../Daruma/Daruma";
 
 export const MascotPanel = ({
   combo,
@@ -25,9 +26,22 @@ export const MascotPanel = ({
     <Camera />
 
     <group>
-      <ambientLight intensity={Math.PI / 2} />
-      <directionalLight position={[1, 4, 2]} intensity={10} color={"#eee"} />
+      <ambientLight intensity={Math.PI} />
+      <directionalLight position={[1, 4, 2]} intensity={1} color={"#eee"} />
     </group>
+
+    <Daruma
+      scale={[0.7, 0.7, 0.7]}
+      position={[2.5, -0.9, 0.5]}
+      color={"purple"}
+    />
+
+    <Daruma
+      scale={[0.7, 0.7, 0.7]}
+      position={[-1.8, -0.8, 1]}
+      color={"#941515"}
+      rotation={[0, -0.5, 0]}
+    />
 
     <Terry
       pose={{
