@@ -6,24 +6,8 @@ import { textures } from "../texture/sprite";
 
 export const HitMarkers = ({ hits }: { hits: Hit[] }) => {
   const ANIMATION_DURATION = 3;
-  const now = Date.now() / 1000;
 
-  const recentSuccessHits = hits
-    .filter((x) => x.type === "hit")
-    .filter(
-      (x) =>
-        now - ANIMATION_DURATION < x.input.timestamp && x.input.timestamp < now
-    );
-
-  const [, refresh] = React.useReducer((x) => 1 + x, 1);
-  React.useEffect(() => {
-    if (!recentSuccessHits[0]) return;
-    const delta =
-      recentSuccessHits[0].input.timestamp + ANIMATION_DURATION - now;
-
-    const timeout = setTimeout(refresh, delta * 1000);
-    return () => clearTimeout(timeout);
-  }, [recentSuccessHits[0]?.input.timestamp]);
+  const recentSuccessHits = useRecentSuccessHits(hits, ANIMATION_DURATION);
 
   return (
     <group>
@@ -36,6 +20,27 @@ export const HitMarkers = ({ hits }: { hits: Hit[] }) => {
       ))}
     </group>
   );
+};
+
+export const useRecentSuccessHits = (hits: Hit[], duration = 1) => {
+  const now = Date.now() / 1000;
+
+  const recentSuccessHits = hits
+    .filter((x) => x.type === "hit")
+    .filter(
+      (x) => now - duration < x.input.timestamp && x.input.timestamp < now
+    );
+
+  const [, refresh] = React.useReducer((x) => 1 + x, 1);
+  React.useEffect(() => {
+    if (!recentSuccessHits[0]) return;
+    const delta = recentSuccessHits[0].input.timestamp + duration - now;
+
+    const timeout = setTimeout(refresh, delta * 1000);
+    return () => clearTimeout(timeout);
+  }, [recentSuccessHits[0]?.input.timestamp]);
+
+  return recentSuccessHits;
 };
 
 const SuccessEffect = ({

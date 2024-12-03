@@ -3,6 +3,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Hit, Track } from "../../state/game";
 import * as THREE from "three";
 import { PlayTrack } from "./PlayTrack";
+import { styled } from "@linaria/react";
+import { TimingMarker } from "./TimingMarker";
 
 export const PlayTrackPanel = ({
   hits,
@@ -16,15 +18,20 @@ export const PlayTrackPanel = ({
   style?: React.CSSProperties;
   className?: string;
 }) => (
-  <Canvas
-    dpr={[1, 2]}
-    gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
-    linear
-    {...props}
-  >
-    <OrthoGraphicCamera />
-    <PlayTrack hits={hits} track={track} />
-  </Canvas>
+  <Container {...props}>
+    <Canvas
+      dpr={[1, 2]}
+      gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
+      linear
+    >
+      <OrthoGraphicCamera />
+      <PlayTrack hits={hits} track={track} />
+    </Canvas>
+    <TimingMarker
+      hits={hits}
+      style={{ position: "absolute", left: 110, top: "12%" }}
+    />
+  </Container>
 );
 
 const OrthoGraphicCamera = (
@@ -60,3 +67,8 @@ const OrthoGraphicCamera = (
 
   return <orthographicCamera position={[0, 0, 1]} {...props} ref={ref} />;
 };
+
+const Container = styled.div`
+  position: relative;
+  height: 100%;
+`;
