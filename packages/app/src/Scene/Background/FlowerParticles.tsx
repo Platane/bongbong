@@ -48,7 +48,7 @@ export const FlowerParticles = ({
           i,
           x + Math.cos(t * theta + offset) * A,
           y + Math.sin(t * theta + offset) * A,
-          0
+          -100
         );
 
         i++;

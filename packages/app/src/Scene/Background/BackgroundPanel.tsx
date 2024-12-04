@@ -4,6 +4,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import { FlowerParticles } from "./FlowerParticles";
 import { Waves } from "./Waves";
+import { Daruma } from "../Daruma/Daruma";
+import { DarumaScene } from "./DarumaScene";
 
 export const BackgroundPanel = ({
   getT,
@@ -26,7 +28,7 @@ export const BackgroundPanel = ({
 );
 
 const Scene = ({ getT }: { getT: () => number }) => {
-  const { size, camera } = useThree();
+  const darumaGroupRef = React.useRef<THREE.Group | null>(null);
 
   // React.useEffect(() => {
   //   (camera as THREE.PerspectiveCamera).fov = Math.random() * 100;
@@ -120,6 +122,25 @@ const Scene = ({ getT }: { getT: () => number }) => {
         rotation={[0, 0, -0.12]}
         getT={getT}
       />
+
+      <group>
+        <ambientLight intensity={3} />
+        <directionalLight
+          position={[1, 4, 2]}
+          intensity={2}
+          color={"#ceb153"}
+        />
+      </group>
+
+      <DarumaScene
+        layers={perspective}
+        getT={getT}
+        width={viewport.width}
+        position={[viewport.x, viewport.y + viewport.height * 0.3, -2]}
+      />
     </>
   );
 };
+
+const perspective = new THREE.Layers();
+perspective.set(3);

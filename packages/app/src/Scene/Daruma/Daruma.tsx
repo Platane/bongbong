@@ -8,20 +8,18 @@ import daruma_svg_src from "../../asset/daruma.svg?url";
 export const Daruma = ({
   color = "red",
   ...props
-}: React.ComponentProps<"mesh"> & { color?: string }) => {
-  const map = React.useMemo(() => {
-    let map = textures.get(color);
-    if (!map) {
-      map = createTexture(color);
-      textures.set(color, map);
-    }
-    return map;
-  }, [color]);
-
+}: React.ComponentProps<"group"> & {
+  color?: "red" | "purple" | "black" | "yellow";
+}) => {
   return (
-    <mesh geometry={geometry} {...props}>
-      <meshToonMaterial map={map} gradientMap={gradientMap} />
-    </mesh>
+    <group {...props}>
+      <mesh geometry={geometry}>
+        <meshToonMaterial {...textures[color]} />
+      </mesh>
+      <mesh geometry={geometry} scale={[1.08, 1.08, 1.08]}>
+        <meshBasicMaterial side={THREE.BackSide} color={"#000"} />
+      </mesh>
+    </group>
   );
 };
 
@@ -116,6 +114,22 @@ const createGradientTexture = () => {
   return texture;
 };
 
-const textures = new Map<string, THREE.Texture>();
-const gradientMap = createGradientTexture();
+const textures = {
+  red: {
+    gradientMap: createGradientTexture(),
+    map: createTexture("#7a1010"),
+  },
+  purple: {
+    gradientMap: createGradientTexture(),
+    map: createTexture("#692094"),
+  },
+  yellow: {
+    gradientMap: createGradientTexture(),
+    map: createTexture("#e2cf25"),
+  },
+  black: {
+    gradientMap: createGradientTexture(),
+    map: createTexture("#1d1d1d"),
+  },
+};
 const geometry = createGeometry();

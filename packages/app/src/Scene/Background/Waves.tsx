@@ -67,13 +67,7 @@ export const Waves = ({
   return (
     <group {...props}>
       <points geometry={geometry}>
-        <pointsMaterial
-          size={size}
-          map={textures.roundWave}
-          depthTest
-          depthWrite
-          transparent
-        />
+        <pointsMaterial size={size} map={textures.roundWave} transparent />
       </points>
     </group>
   );
