@@ -62,13 +62,12 @@ const master = new THREE.CanvasTexture(canvas);
 master.repeat.set(1 / (n + (margin / size) * (n - 1)), 1);
 master.generateMipmaps = true;
 
-export const getImageFromSvg = async (svg: string) => {
-  const img = new Image();
-  return new Promise((r) => {
-    img.onload = r;
+export const getImageFromSvg = async (svg: string) =>
+  new Promise<HTMLImageElement>((r) => {
+    const img = new Image();
+    img.onload = () => r(img);
     img.src = "data:image/svg+xml," + encodeURIComponent(svg);
-  }).then(() => img);
-};
+  });
 
 Promise.all(
   Object.values(svgs).map(async (svg, i) =>

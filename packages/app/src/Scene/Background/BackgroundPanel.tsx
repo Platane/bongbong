@@ -1,7 +1,7 @@
 import React from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
+import { OrthographicCamera, Tetrahedron } from "@react-three/drei";
 import { FlowerParticles } from "./FlowerParticles";
 import { Waves } from "./Waves";
 import { Daruma } from "../Daruma/Daruma";
@@ -28,22 +28,12 @@ export const BackgroundPanel = ({
 );
 
 const Scene = ({ getT }: { getT: () => number }) => {
-  const darumaGroupRef = React.useRef<THREE.Group | null>(null);
+  const { size, scene, set } = useThree();
 
-  // React.useEffect(() => {
-  //   (camera as THREE.PerspectiveCamera).fov = Math.random() * 100;
-  // }, [size.width, size.height]);
-
-  const [perspectiveCamera] = React.useState(
-    () => new THREE.PerspectiveCamera()
-  );
-  const [orthographicCamera] = React.useState(
-    () => new THREE.OrthographicCamera()
-  );
-  const [backgroundTexture] = React.useState(() => {
+  React.useLayoutEffect(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 1;
-    canvas.height = 8;
+    canvas.height = 12;
     const ctx = canvas.getContext("2d")!;
 
     const linearGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -54,59 +44,52 @@ const Scene = ({ getT }: { getT: () => number }) => {
 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    return new THREE.CanvasTexture(canvas);
-  });
+    const texture = new THREE.CanvasTexture(canvas);
 
-  const [viewport, setViewport] = React.useState({
-    x: -10,
-    y: -10,
-    width: 20,
-    height: 20,
-  });
+    scene.background = texture;
 
-  useFrame(({ gl, size, scene }) => {
-    const aspectRatio = size.height / size.width;
+    return () => texture.dispose();
+  }, []);
 
-    const width = size.width / 63;
-    const height = width * aspectRatio;
+  const aspectRatio = size.height / size.width;
 
-    orthographicCamera.left = -width / 2;
-    orthographicCamera.right = width / 2;
+  const width = size.width / 63;
+  const height = width * aspectRatio;
 
-    orthographicCamera.bottom = -height / 2;
-    orthographicCamera.top = height / 2;
+  const viewport = { x: -width / 2, y: -height / 2, width, height };
 
-    setViewport((v) => {
-      const v2 = {
-        x: orthographicCamera.left,
-        y: orthographicCamera.bottom,
-        width: orthographicCamera.right - orthographicCamera.left,
-        height: orthographicCamera.top - orthographicCamera.bottom,
-      };
+  React.useLayoutEffect(() => {
+    const camera = new THREE.OrthographicCamera();
 
-      if (
-        v2.x !== v.x ||
-        v2.y !== v.y ||
-        v2.width !== v.width ||
-        v2.height !== v.height
-      )
-        return v2;
+    camera.left = viewport.x;
+    camera.right = viewport.x + viewport.width;
 
-      return v;
-    });
+    camera.bottom = viewport.y;
+    camera.top = viewport.y + viewport.height;
 
-    orthographicCamera.position.set(0, 0, 1);
-    orthographicCamera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.position.set(0, 0, 1);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    orthographicCamera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 
-    scene.background = backgroundTexture;
+    set({ camera });
+  }, [viewport.x, viewport.y, viewport.width, viewport.height]);
 
-    gl.render(scene, orthographicCamera);
-  }, 1);
+  const darumaScale = THREE.MathUtils.clamp(
+    viewport.width / viewport.height,
+    0.4,
+    1
+  );
 
   return (
     <>
+      <OrthographicCamera
+        left={viewport.x}
+        right={viewport.x + viewport.width}
+        bottom={viewport.y}
+        top={viewport.y + viewport.height}
+      />
+
       <FlowerParticles
         width={Math.ceil(viewport.width) + 2}
         height={Math.ceil(viewport.height) + 2}
@@ -135,8 +118,9 @@ const Scene = ({ getT }: { getT: () => number }) => {
       <DarumaScene
         layers={perspective}
         getT={getT}
-        width={viewport.width}
-        position={[viewport.x, viewport.y + viewport.height * 0.3, -2]}
+        width={viewport.width / darumaScale}
+        scale={[darumaScale, darumaScale, darumaScale]}
+        position={[viewport.x, viewport.y + 5, -2]}
       />
     </>
   );

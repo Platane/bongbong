@@ -16,7 +16,7 @@ export const DarumaScene = ({
 } & React.ComponentProps<"group">) => {
   const ref = React.useRef<THREE.Group | null>(null);
 
-  useFrame(({ gl, size, scene }) => {
+  useFrame(() => {
     const darumas = ref.current?.children;
 
     if (!darumas) return;
@@ -33,7 +33,7 @@ export const DarumaScene = ({
       const a2 = lerp(1.5, 1.2, offset ** 2 % 1);
       const y0 = lerp(3.8, 4.7, offset ** 3 % 1);
 
-      const u = gt / 7 + offset * 0.6;
+      const u = gt / 4 + (Math.round(offset * 4) / 4) * 0.5;
       const t = u % 1;
 
       const W = width + 5;
@@ -88,7 +88,7 @@ export const DarumaScene = ({
 
   return (
     <group {...props} ref={ref}>
-      {colors.slice(0, Math.ceil(width / 6.2)).map((color, i) => (
+      {colors.slice(0, Math.ceil(width / 6.5)).map((color, i) => (
         <group key={i}>
           <Daruma color={color} scale={[1.5, 1.5, 1.5]} />
         </group>

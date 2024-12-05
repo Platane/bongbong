@@ -4,6 +4,7 @@ import React from "react";
 // generated from https://www.rayon.design/app/model/43bc2f50-e61c-4458-9f39-2f984c93fd70?token=Fnr72pPvMzbmaJBgMOdGKBOE4P8rFQ1-
 // @ts-ignore
 import daruma_svg_src from "../../asset/daruma.svg?url";
+import { getImageFromSvg } from "../texture/sprite";
 
 export const Daruma = ({
   color = "red",
@@ -71,15 +72,20 @@ const createTexture = (color: string) => {
 
   const texture = new THREE.CanvasTexture(canvas);
 
-  new Promise<HTMLImageElement>((r) => {
-    const img = new Image();
-    img.onload = () => r(img);
-    img.src = daruma_svg_src;
-  }).then((img) => {
-    ctx.drawImage(img, size * 0.04, size * 0.14, size * 0.42, size * 0.7);
+  fetch(daruma_svg_src)
+    .then((res) => res.text())
+    .then((svgContent) =>
+      svgContent.replace(
+        /preserveAspectRatio="[^"]*"/,
+        'preserveAspectRatio="none"'
+      )
+    )
+    .then(getImageFromSvg)
+    .then((img) => {
+      ctx.drawImage(img, size * 0.04, size * 0.14, size * 0.42, size * 0.7);
 
-    texture.needsUpdate = true;
-  });
+      texture.needsUpdate = true;
+    });
 
   return texture;
 };
