@@ -148,7 +148,7 @@ const textures = {
   },
   black: {
     gradientMap: createGradientTexture(),
-    map: createTexture("#1d1d1d"),
+    map: createTexture("#413c3c"),
   },
 };
 const geometry = createGeometry();
