@@ -95,7 +95,7 @@ const createTexture = (color: string) => {
     )
     .then(getImageFromSvg)
     .then((img) => {
-      ctx.drawImage(img, size * 0.04, size * 0.14, size * 0.42, size * 0.7);
+      ctx.drawImage(img, size * 0.03, size * 0.14, size * 0.44, size * 0.73);
 
       texture.needsUpdate = true;
     });
