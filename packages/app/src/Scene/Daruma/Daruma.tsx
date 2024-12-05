@@ -6,6 +6,8 @@ import React from "react";
 import daruma_svg_src from "../../asset/daruma.svg?url";
 import { getImageFromSvg } from "../texture/sprite";
 
+const { clamp, lerp, inverseLerp } = THREE.MathUtils;
+
 export const Daruma = ({
   color = "red",
   ...props
@@ -33,17 +35,28 @@ const createGeometry = () => {
 
   const center = new THREE.Vector3(0, 0.5, 1.6);
   const p = new THREE.Vector3();
-  const n = new THREE.Vector3();
   const v = new THREE.Vector3();
 
   for (let i = positions.count; i--; ) {
     p.fromBufferAttribute(positions, i);
-    n.fromBufferAttribute(normals, i);
 
     v.subVectors(p, center);
     const l = v.length();
 
     p.addScaledVector(v, 0.34 / l ** 1.6);
+
+    positions.setXYZ(i, p.x, p.y, p.z);
+  }
+
+  for (let i = positions.count; i--; ) {
+    p.fromBufferAttribute(positions, i);
+
+    const u = inverseLerp(0.14, -1, p.y);
+
+    const k = lerp(0.95, 1, clamp(Math.abs(u * 2 - 1) ** 1.3, 0, 1));
+
+    p.x = p.x * k;
+    p.z = p.z * k;
 
     positions.setXYZ(i, p.x, p.y, p.z);
   }
