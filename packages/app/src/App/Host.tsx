@@ -178,7 +178,7 @@ const Game = ({ game, roomId }: { game: Game; roomId: string }) => {
       </a>
       <GameScreen
         game={game}
-        style={{ width: "100vw", height: "min( 600px , 50vh )" }}
+        style={{ width: "100vw", height: "min( 800px , 80vh )" }}
       />
     </>
   );

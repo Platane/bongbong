@@ -75,11 +75,7 @@ const Scene = ({ getT }: { getT: () => number }) => {
     set({ camera });
   }, [viewport.x, viewport.y, viewport.width, viewport.height]);
 
-  const darumaScale = THREE.MathUtils.clamp(
-    viewport.width / viewport.height,
-    0.4,
-    1
-  );
+  const darumaScale = THREE.MathUtils.clamp(viewport.width / 26, 0.4, 1);
 
   return (
     <>

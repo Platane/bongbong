@@ -53,7 +53,7 @@ export const tracks = [
   {
     title: "DEAF KEV - Invincible.m4a",
     src: "https://github.com/user-attachments/assets/ac0c3def-221d-431e-b59d-5887c6d22d79",
-    ...toNotes("", { bpm: 1, offset: 0 }),
+    ...toNotes("", { bpm: 100, offset: 0 }),
   },
   {
     title: "DragonForce - Through the Fire and Flames",
