@@ -29,6 +29,7 @@ export const PlayTrackPanel = ({
     </Canvas>
     <TimingMarker
       hits={hits}
+      track={track}
       style={{ position: "absolute", left: 110, top: "12%" }}
     />
   </Container>

@@ -60,8 +60,13 @@ export const tracks = [
     src: "https://github.com/user-attachments/assets/d6d1d7cb-528c-4072-bec9-de64767963ce",
     ...toNotes(
       `
-      S - - - |
-      
+      S - - - | - - - R | R - - - | - - - - |
+      S - - - | - - - - | R - - - | - - - - |
+      S S S S | S S S S | S S S S | S S S S |
+      S S S S | S S S S | S S S S | S S S S |
+      - - - - | - - - - | R - - - | - - - - |
+      R - - - | - - - - | R - - - | - - - - |
+      S S S S | S S S S | S S S S | S S S S |
       `,
       { bpm: 200, offset: 1.6 }
     ),

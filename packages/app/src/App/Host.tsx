@@ -116,6 +116,7 @@ const Lobby = ({
   startGame: (track: Track) => void;
 }) => {
   const [hoveredSrc, setHoveredSrc] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
   const joinUrl =
     window.origin + import.meta.env.BASE_URL + `room/${roomId}/remote`;
@@ -131,6 +132,7 @@ const Lobby = ({
         {tracks.map((track) => (
           <li key={track.title} onMouseOver={() => setHoveredSrc(track.src)}>
             <button
+              disabled={loading}
               onClick={() => {
                 if (remotes.length === 0 && false) {
                   alert(
@@ -138,6 +140,8 @@ const Lobby = ({
                   );
                   return;
                 }
+
+                setLoading(true);
 
                 const audio = new Audio();
                 audio.src = track.src;
