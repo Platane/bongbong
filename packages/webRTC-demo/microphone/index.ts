@@ -18,6 +18,7 @@ const createCurveChart = () => {
   const canvas = document.createElement("canvas");
   canvas.width = 1400;
   canvas.height = 600;
+  canvas.style.width = `min( ${canvas.width}px , 100% - 16px )`;
 
   const ctx = canvas.getContext("2d")!;
   const { width, height } = canvas;
@@ -44,6 +45,7 @@ const createBarChart = () => {
   const canvas = document.createElement("canvas");
   canvas.width = 1400;
   canvas.height = 600;
+  canvas.style.width = `min( ${canvas.width}px , 100% - 16px )`;
 
   const ctx = canvas.getContext("2d")!;
   const { width, height } = canvas;
