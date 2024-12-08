@@ -10,7 +10,7 @@
     "@dimforge/rapier3d": "0.14.0",
     "@linaria/react": "6.2.1",
     "@react-three/fiber": "8.17.10",
-    "@react-three/drei": "9.119.0",
+    "@react-three/drei": "9.120.3",
     "fast-deep-equal": "3.1.3",
     "react-dom": "18.3.1",
     "react-qr-code": "2.0.15",
@@ -28,6 +28,6 @@
     "vite-plugin-runtime-linaria": "github:platane/vite-plugin-runtime-linaria#88d107b",
     "vite-plugin-top-level-await": "1.4.4",
     "vite-plugin-wasm": "3.3.0",
-    "vite": "6.0.1"
+    "vite": "6.0.3"
   }
 }
