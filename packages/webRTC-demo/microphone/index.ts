@@ -1,5 +1,8 @@
 import QRCode from "qrcode";
 
+// @ts-ignore
+import example_src from "./input.mp3?url";
+
 ///
 /// some html elements
 
@@ -90,29 +93,92 @@ rootElement.appendChild(fftCurve.canvas);
 
   const audioContext = new AudioContext();
 
-  const source = audioContext.createMediaStreamSource(stream);
+  // const source = audioContext.createMediaStreamSource(stream);
 
-  // const out = audioContext.createMediaStreamDestination();
+  // play the example
+  const audio = new Audio();
+  audio.src = example_src;
+  audio.loop = true;
+  audio.crossOrigin = "anonymous";
+  audio.play();
+  const source = audioContext.createMediaElementSource(audio);
 
-  // const mediaRecorder = new MediaRecorder(out.stream, {
-  //   mimeType: "video/webm; codecs=vp9",
-  // });
-  // mediaRecorder.addEventListener("dataavailable", () => console.log("ok"));
-  // mediaRecorder.start();
+  {
+    const out = audioContext.createMediaStreamDestination();
+    const mediaRecorder = new MediaRecorder(out.stream, {
+      mimeType: "video/webm; codecs=vp9",
+    });
+
+    const recordedChunks: BlobPart[] = [];
+
+    mediaRecorder.addEventListener("dataavailable", (e) => {
+      recordedChunks.push(e.data);
+    });
+    mediaRecorder.addEventListener("stop", () => {
+      console.log("recording over");
+
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "test.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+
+    source.connect(out);
+
+    //
+
+    const button = document.createElement("button");
+    button.innerText = "record";
+    rootElement.appendChild(button);
+    button.addEventListener("click", () => {
+      button.disabled = true;
+
+      mediaRecorder.start();
+
+      const startTime = audioContext.currentTime;
+
+      const loop = () => {
+        const duration = audioContext.currentTime - startTime;
+        const maxDuration = 5;
+
+        if (duration > maxDuration) {
+          mediaRecorder.stop();
+
+          button.innerText = "done";
+        } else {
+          const k = Math.floor((1 - duration / maxDuration) * 16);
+
+          button.innerText = `recording ${".".repeat(k)}`;
+
+          requestAnimationFrame(loop);
+        }
+      };
+      loop();
+    });
+  }
 
   // playback
   {
-    const delay = audioContext.createDelay(1);
-    delay.delayTime.value = 0.5;
-    source.connect(delay);
-    delay.connect(audioContext.destination);
+    // const delay = audioContext.createDelay(1);
+    // delay.delayTime.value = 0.5;
+    // source.connect(delay);
+    // delay.connect(audioContext.destination);
   }
+
+  source.connect(audioContext.destination);
 
   {
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
+    analyser.fftSize = 2048 * 16;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
+
+    console.log("window duration", bufferLength / audioContext.sampleRate);
 
     source.connect(analyser);
 
