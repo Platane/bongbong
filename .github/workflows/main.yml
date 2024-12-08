@@ -30,6 +30,8 @@ jobs:
 
       - run: bunx vite build --base /bongbong/demo/webRTC-multi-guest --outDir ../../app/dist/demo/webRTC-multi-guest --minify false packages/webRTC-demo/multi-guest
 
+      - run: bunx vite build --base /bongbong/demo/microphone --outDir ../../app/dist/demo/microphone --minify false packages/webRTC-demo/microphone
+
       - run: bun build packages/app/pageFunctions/signal.ts --outfile=packages/app/dist/functions/signal/room/[roomId].js
 
       - run: bunx wrangler pages deploy . --project-name=bongbong --branch=main
