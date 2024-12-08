@@ -4,6 +4,7 @@
 
 - 🧑‍🔬 [webRTC minimal demo](https://platane.github.io/bongbong/demo/webRTC-minimal)
 - 🐙 [webRTC multi guest demo](https://platane.github.io/bongbong/demo/webRTC-multi-guest)
+- 🎤 [microphone demo](https://platane.github.io/bongbong/demo/microphone)
 
 # Inspiration
 
