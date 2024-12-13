@@ -1,4 +1,4 @@
-import QRCode from "qrcode";
+import Webfft from "webfft";
 
 // @ts-ignore
 import example_src from "./input.mp3?url";
@@ -224,6 +224,13 @@ rootElement.appendChild(fftCurve.canvas);
       data: Float32Array;
     }[];
 
+    const hitContainer = document.createElement("div");
+    hitContainer.style.display = "flex";
+    hitContainer.style.flexDirection = "row";
+    hitContainer.style.flexWrap = "wrap";
+    hitContainer.style.gap = "16px";
+    rootElement.appendChild(hitContainer);
+
     const addHit = (startDate: number, endDate: number, data: Float32Array) => {
       hits.push({ startDate, endDate, data });
 
@@ -252,6 +259,37 @@ rootElement.appendChild(fftCurve.canvas);
       }
 
       {
+        const inputSize = 2 ** Math.ceil(Math.log(data.length) / Math.LN2);
+
+        const input0pad = new Float32Array(inputSize);
+        input0pad.fill(0);
+        input0pad.set(data, 0);
+
+        const fftsize = input0pad.length / 2;
+        const fft = new Webfft(fftsize);
+        const out_ = fft.fft(input0pad);
+        const out = out_.subarray(0, 260);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 260;
+        canvas.height = 200;
+        const ctx = canvas.getContext("2d")!;
+        ctx.beginPath();
+        for (let i = 0; i < out.length; i++) {
+          ctx.fillRect(
+            (i / out.length) * canvas.width,
+            canvas.height,
+            (1 / out.length) * canvas.width * 0.5,
+            -out[i] * canvas.height * 0.02
+          );
+        }
+
+        div.appendChild(canvas);
+
+        // fft.dispose()
+      }
+
+      {
         const audio = document.createElement("audio");
         audio.style.width = "100%";
         audio.controls = true;
@@ -268,8 +306,6 @@ rootElement.appendChild(fftCurve.canvas);
 
         const bufferSource = audioContext.createBufferSource();
         bufferSource.buffer = buffer;
-
-        bufferSource.connect(audioContext.destination);
 
         const recorder = createRecorder(bufferSource);
         recorder.start();
@@ -292,7 +328,7 @@ rootElement.appendChild(fftCurve.canvas);
         div.appendChild(audio);
       }
 
-      rootElement.appendChild(div);
+      hitContainer.appendChild(div);
     };
 
     const loop = () => {
@@ -340,7 +376,7 @@ rootElement.appendChild(fftCurve.canvas);
 
         const v = dataArrayFloat[i] ** 2;
 
-        const threshold = 0.02;
+        const threshold = 0.002;
 
         if (v < threshold) continue;
 

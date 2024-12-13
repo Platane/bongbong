@@ -7,6 +7,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "webfft": "1.0.3",
     "qrcode": "1.5.4",
     "@bongbong/webRTC": "0.0.1"
   },
