@@ -20,13 +20,13 @@ console.log = (...args) => {
 const createCurveChart = () => {
   const canvas = document.createElement("canvas");
   canvas.width = 1400;
-  canvas.height = 600;
+  canvas.height = 400;
   canvas.style.width = `min( ${canvas.width}px , 100% - 16px )`;
 
   const ctx = canvas.getContext("2d")!;
   const { width, height } = canvas;
 
-  const update = (dataArray: Uint8Array) => {
+  const update = (dataArray: Float32Array) => {
     ctx.clearRect(0, 0, width, height);
 
     ctx.lineWidth = 1;
@@ -35,19 +35,19 @@ const createCurveChart = () => {
     for (let i = 0; i < dataArray.length; i++) {
       ctx.lineTo(
         (i / dataArray.length) * width,
-        (dataArray[i] / 128.0) * (height / 2)
+        (dataArray[i] + 1) * (height / 2)
       );
     }
     ctx.stroke();
   };
 
-  return { canvas, update };
+  return { canvas, ctx, update };
 };
 
 const createBarChart = () => {
   const canvas = document.createElement("canvas");
   canvas.width = 1400;
-  canvas.height = 600;
+  canvas.height = 400;
   canvas.style.width = `min( ${canvas.width}px , 100% - 16px )`;
 
   const ctx = canvas.getContext("2d")!;
@@ -68,7 +68,7 @@ const createBarChart = () => {
     }
   };
 
-  return { canvas, update };
+  return { canvas, ctx, update };
 };
 
 const timeCurve = createCurveChart();
@@ -98,16 +98,23 @@ rootElement.appendChild(fftCurve.canvas);
   // play the example
   const audio = new Audio();
   audio.src = example_src;
-  audio.loop = true;
+  audio.loop = !true;
   audio.crossOrigin = "anonymous";
   audio.play();
   const source = audioContext.createMediaElementSource(audio);
 
-  {
+  const createRecorder = (source: AudioNode) => {
     const out = audioContext.createMediaStreamDestination();
-    const mediaRecorder = new MediaRecorder(out.stream, {
-      mimeType: "video/webm; codecs=vp9",
-    });
+    const mimeType = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "video/webm;codecs=vp8",
+      "video/webm;codecs=daala",
+      "video/webm;codecs=h264",
+      "video/webm",
+      "video/mp4",
+    ].find((t) => MediaRecorder.isTypeSupported(t));
+    const mediaRecorder = new MediaRecorder(out.stream, { mimeType });
 
     const recordedChunks: BlobPart[] = [];
 
@@ -115,21 +122,28 @@ rootElement.appendChild(fftCurve.canvas);
       recordedChunks.push(e.data);
     });
     mediaRecorder.addEventListener("stop", () => {
-      console.log("recording over");
-
-      const blob = new Blob(recordedChunks, {
-        type: "video/webm",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "test.webm";
-      a.click();
-      window.URL.revokeObjectURL(url);
+      const blob = new Blob(recordedChunks, { type: mimeType });
+      resolveBlob(blob);
     });
 
     source.connect(out);
 
+    let resolveBlob: (value: Blob) => void;
+    const blobPromise = new Promise<Blob>((r) => {
+      resolveBlob = r;
+    });
+
+    return {
+      start: () => mediaRecorder.start(),
+      stop: () => {
+        // mediaRecorder.requestData();
+        mediaRecorder.stop();
+      },
+      getBlob: () => blobPromise,
+    };
+  };
+
+  {
     //
 
     const button = document.createElement("button");
@@ -138,16 +152,25 @@ rootElement.appendChild(fftCurve.canvas);
     button.addEventListener("click", () => {
       button.disabled = true;
 
-      mediaRecorder.start();
+      const recorder = createRecorder(source);
+      recorder.getBlob().then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "test.webm";
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
 
       const startTime = audioContext.currentTime;
+      recorder.start();
 
       const loop = () => {
         const duration = audioContext.currentTime - startTime;
         const maxDuration = 5;
 
         if (duration > maxDuration) {
-          mediaRecorder.stop();
+          recorder.stop();
 
           button.innerText = "done";
         } else {
@@ -174,22 +197,178 @@ rootElement.appendChild(fftCurve.canvas);
 
   {
     const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048 * 16;
+    analyser.fftSize = 2048 * 4;
     const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+    const dataArrayFloat = new Float32Array(bufferLength);
+    const dataArrayUint = new Uint8Array(bufferLength);
 
-    console.log("window duration", bufferLength / audioContext.sampleRate);
+    console.log(
+      "window duration",
+      bufferLength / audioContext.sampleRate,
+      analyser.frequencyBinCount
+    );
+
+    // const buffer = audioContext.createBuffer(
+    //   source.channelCount,
+    //   0.5,
+    //   audioContext.sampleRate
+    // );
 
     source.connect(analyser);
 
+    let average = 0.1;
+
+    const hits = [] as {
+      startDate: number;
+      endDate: number;
+      data: Float32Array;
+    }[];
+
+    const addHit = (startDate: number, endDate: number, data: Float32Array) => {
+      hits.push({ startDate, endDate, data });
+
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.flexDirection = "column";
+      div.style.width = "260px";
+
+      {
+        const canvas = document.createElement("canvas");
+        canvas.width = 240;
+        canvas.style.border = "solid 1px #888";
+        canvas.height = 200;
+        const ctx = canvas.getContext("2d")!;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        for (let i = 0; i < data.length; i++) {
+          ctx.lineTo(
+            (i / data.length) * canvas.width,
+            (data[i] + 1) * (canvas.height / 2)
+          );
+        }
+        ctx.stroke();
+
+        div.appendChild(canvas);
+      }
+
+      {
+        const audio = document.createElement("audio");
+        audio.style.width = "100%";
+        audio.controls = true;
+        audio.loop = false;
+
+        const buffer = audioContext.createBuffer(
+          1,
+          data.length,
+          audioContext.sampleRate
+        );
+
+        const bufferContent = buffer.getChannelData(0);
+        bufferContent.set(data, 0);
+
+        const bufferSource = audioContext.createBufferSource();
+        bufferSource.buffer = buffer;
+
+        bufferSource.connect(audioContext.destination);
+
+        const recorder = createRecorder(bufferSource);
+        recorder.start();
+        bufferSource.start();
+
+        bufferSource.onended = () => {
+          setTimeout(() => recorder.stop(), 10);
+        };
+
+        recorder.getBlob().then((blob) => {
+          audio.src = URL.createObjectURL(blob);
+
+          // workaround to fix the audio duration
+          // ref: https://stackoverflow.com/questions/38443084/how-can-i-add-predefined-length-to-audio-recorded-from-mediarecorder-in-chrome
+          audio.onloadedmetadata = () => {
+            audio.currentTime = Number.MAX_SAFE_INTEGER;
+          };
+        });
+
+        div.appendChild(audio);
+      }
+
+      rootElement.appendChild(div);
+    };
+
     const loop = () => {
-      analyser.getByteFrequencyData(dataArray);
-      fftCurve.update(dataArray);
+      analyser.getByteFrequencyData(dataArrayUint);
+      fftCurve.update(dataArrayUint);
 
-      analyser.getByteTimeDomainData(dataArray);
-      timeCurve.update(dataArray);
+      analyser.getFloatTimeDomainData(dataArrayFloat);
+      timeCurve.update(dataArrayFloat);
 
-      requestAnimationFrame(loop);
+      const instantAverage =
+        dataArrayFloat.reduce((sum, x) => sum + x ** 2) / dataArrayFloat.length;
+
+      average = 0.9 * average + instantAverage * 0.1;
+
+      {
+        timeCurve.ctx.save();
+        timeCurve.ctx.strokeStyle = "red";
+        timeCurve.ctx.beginPath();
+        timeCurve.ctx.moveTo(
+          0,
+          (average * 0.5 + 0.5) * timeCurve.canvas.height
+        );
+        timeCurve.ctx.lineTo(
+          timeCurve.canvas.width,
+          (average * 0.5 + 0.5) * timeCurve.canvas.height
+        );
+        timeCurve.ctx.stroke();
+        timeCurve.ctx.restore();
+      }
+
+      const WINDOW_SIZE_SECOND = 0.06;
+
+      for (
+        let i = 0;
+        i <
+        dataArrayFloat.length -
+          Math.floor(audioContext.sampleRate * WINDOW_SIZE_SECOND);
+        i++
+      ) {
+        const t =
+          audioContext.currentTime -
+          (dataArrayFloat.length - i) / audioContext.sampleRate;
+
+        if (hits.some((h) => h.startDate <= t && t <= h.endDate)) continue;
+
+        const v = dataArrayFloat[i] ** 2;
+
+        const threshold = 0.02;
+
+        if (v < threshold) continue;
+
+        const startIndex =
+          i - Math.floor(audioContext.sampleRate * WINDOW_SIZE_SECOND * 0.04);
+        const endIndex =
+          i + Math.floor(audioContext.sampleRate * WINDOW_SIZE_SECOND * 0.96);
+
+        const startDate =
+          audioContext.currentTime -
+          (dataArrayFloat.length - startIndex) / audioContext.sampleRate;
+        const endDate =
+          audioContext.currentTime -
+          (dataArrayFloat.length - endIndex) / audioContext.sampleRate;
+        const data = dataArrayFloat.subarray(startIndex, endIndex);
+
+        if (hits.some((h) => h.startDate <= endDate && startDate <= h.endDate))
+          continue;
+
+        addHit(startDate, endDate, data);
+      }
+
+      if (audioContext.currentTime > 5) {
+        // debugger;
+      } else {
+        // setTimeout(loop, 10);
+        requestAnimationFrame(loop);
+      }
     };
     loop();
   }
