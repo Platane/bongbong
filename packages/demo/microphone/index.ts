@@ -267,8 +267,7 @@ rootElement.appendChild(fftCurve.canvas);
 
         const fftsize = input0pad.length / 2;
         const fft = new Webfft(fftsize);
-        const out_ = fft.fft(input0pad);
-        const out = out_.subarray(0, 260);
+        const out = fft.fft(input0pad);
 
         const canvas = document.createElement("canvas");
         canvas.width = 260;
