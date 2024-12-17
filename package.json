@@ -16,6 +16,6 @@
   },
   "scripts": {
     "type": "tsc --noEmit",
-    "dev": "( cd packages/app ; vite )"
+    "dev": "vite packages/app"
   }
 }
