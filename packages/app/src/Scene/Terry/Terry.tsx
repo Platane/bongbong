@@ -50,10 +50,7 @@ export const Terry = ({
         );
       }}
     >
-      <group
-        //
-        rotation={[1.25, 0, 0.1]}
-      >
+      <group rotation={[1.25, 0, 0]}>
         <Body />
         <Face
           rotation={[-Math.PI / 2, 0, 0]}
@@ -135,8 +132,17 @@ const createDrumBones = () => {
   const skeletton = new THREE.Skeleton(bones);
 
   const update = (curve: number) => {
-    head.position.set(0, 1, 0);
-    head.position.set(0, 1 + curve * 1, 0);
+    // head.position.set(0, 1, 0);
+    const u = -curve * 2.4;
+    root.position.set(0, 0, u);
+    ass.position.set(0, -1, -u);
+    head.position.set(0, 1, -u);
+
+    ass.quaternion.identity();
+    ass.rotateX(-curve * 3);
+
+    head.quaternion.identity();
+    head.rotateX(curve * 1.5);
   };
 
   return { root, skeletton, bones, update };
