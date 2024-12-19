@@ -136,8 +136,7 @@ const createDrumBones = () => {
 
   const update = (curve: number) => {
     head.position.set(0, 1, 0);
-    head.quaternion.identity();
-    head.rotateZ(curve * 4);
+    head.position.set(0, 1 + curve * 1, 0);
   };
 
   return { root, skeletton, bones, update };
@@ -158,29 +157,44 @@ const computeDrumWeight = (
 
   const p = new THREE.Vector3();
   const b = new THREE.Vector3();
-  const weights = Array.from(bones, () => 0);
+  const maxWeights = Array.from({ length: 5 }, () => ({ index: 0, weight: 0 }));
 
   for (let i = positions.count; i--; ) {
     p.set(positions.getX(i), positions.getY(i), positions.getZ(i));
 
+    //
+    // fill weighrs array
+
+    // reset max weight
+    for (let k = 4; k--; ) maxWeights[k].weight = 0;
+
     for (let j = bones.length; j--; ) {
+      // compute weight
       bones[j].getWorldPosition(b);
 
       const d = p.distanceTo(b);
-      const w = 1 / d ** 3;
+      const w = d === 0 ? 999 : 1 / d ** 3;
 
-      weights[j] = w;
+      // insert weight
+      maxWeights[4].weight = w;
+      maxWeights[4].index = j;
+
+      for (
+        let k = maxWeights.length - 1;
+        k-- && maxWeights[k + 1].weight > maxWeights[k].weight;
+      ) {
+        const { weight, index } = maxWeights[k + 1];
+        maxWeights[k + 1].weight = maxWeights[k].weight;
+        maxWeights[k + 1].index = maxWeights[k].index;
+        maxWeights[k].weight = weight;
+        maxWeights[k].index = index;
+      }
     }
 
-    const bs = weights
-      .map((weight, index) => ({ weight, index }))
-      .sort((a, b) => a.weight - b.weight)
-      .slice(0, 4);
-
-    const sum = bs.reduce((sum, { weight }) => sum + weight, 0);
+    const sum = maxWeights.reduce((sum, { weight }) => sum + weight, 0);
     for (let k = 4; k--; ) {
-      skinIndices[i * 4 + k] = bs[k]?.index ?? 0;
-      skinWeights[i * 4 + k] = (bs[k]?.weight ?? 0) / sum;
+      skinIndices[i * 4 + k] = maxWeights[k].index;
+      skinWeights[i * 4 + k] = maxWeights[k].weight / sum;
     }
   }
 
