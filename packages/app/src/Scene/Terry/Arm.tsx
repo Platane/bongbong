@@ -3,7 +3,7 @@ import React from "react";
 import { MeshToonMaterial } from "three";
 import * as THREE from "three";
 import type * as IRAPIER from "@dimforge/rapier3d";
-import { createTubeGeometry, updateTubeGeometry } from "./tube";
+import { createTubeGeometry, updateTubeGeometry } from "../utils/tube";
 
 export const init = () =>
   import("@dimforge/rapier3d/").then((r) => {
@@ -53,7 +53,7 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
 
     const debugSpheres = Array.from(
       { length: particleCount },
-      () => new THREE.Mesh(geometry, material)
+      () => new THREE.Mesh(geometry, material),
     );
 
     const A = new THREE.Vector3();
@@ -71,13 +71,13 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     const tubeParams = { radius: 0.17, radialSegments: 8 };
     const tube = new THREE.Mesh(
       createTubeGeometry(particleCount, tubeParams),
-      material
+      material,
     );
 
     const sphereGeometry = new THREE.SphereGeometry(
       tubeParams.radius * 0.98,
       Math.ceil(tubeParams.radialSegments),
-      Math.ceil(tubeParams.radialSegments)
+      Math.ceil(tubeParams.radialSegments),
     );
     const sphereA = new THREE.Mesh(sphereGeometry, material);
     const sphereB = new THREE.Mesh(sphereGeometry, material);
@@ -142,7 +142,7 @@ export const createWorld = (
   }: {
     A: { x: number; y: number; z: number };
     B: { x: number; y: number; z: number };
-  }
+  },
 ) => {
   const gravity = { x: 0.0, y: -9.81, z: 0.0 };
 
