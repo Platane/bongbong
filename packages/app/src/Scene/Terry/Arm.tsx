@@ -193,9 +193,9 @@ export const createWorld = (
     const joint = world.createImpulseJoint(joinData, body1, body2, false);
   }
 
-  const applyToScene = (balls: THREE.Object3D[]) => {
+  const applyToScene = (objects: THREE.Object3D[]) => {
     for (let i = bodies.length; i--; ) {
-      const g = balls[i];
+      const g = objects[i];
       const body = bodies[i];
 
       const position = body.translation();

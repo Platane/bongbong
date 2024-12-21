@@ -2,8 +2,8 @@ import React from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Input } from "../../state/game";
 import * as THREE from "three";
-import { createDrumGeometry } from "../Terry/drum";
 import { blue, red } from "../texture/theme";
+import { createDrumGeometry } from "../Terry/Body";
 
 export const DrumInput = ({
   inputs,
@@ -61,7 +61,7 @@ const Drum = ({
   const now = Date.now() / 1000;
 
   const recentInputs = inputs.filter(
-    (i) => now - ANIMATION_DURATION < i.timestamp && i.timestamp < now
+    (i) => now - ANIMATION_DURATION < i.timestamp && i.timestamp < now,
   );
 
   const [, refresh] = React.useReducer((x) => 1 + x, 1);

@@ -21,7 +21,7 @@ export const Terry = ({
     ref.current.userData.t = (ref.current.userData.t ?? 0) + delta;
 
     ref.current.rotation.y =
-      Math.sin(ref.current.userData.t * 1.4) * 0.5 - 0.35;
+      Math.sin(ref.current.userData.t * 1.4) * 1.5 - 1.35;
   });
 
   const [B, setB] = React.useState(() => new THREE.Vector3(3, 0, -1));
