@@ -37,6 +37,7 @@ export const Terry = ({
     <group
       ref={ref}
       position={[0, 0, 0]}
+      scale={[1, 1, 1]}
       onClick={(e) => {
         e.stopPropagation();
         console.log("ccc");

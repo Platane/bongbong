@@ -20,7 +20,7 @@ export const Face = ({
         depthTest={false}
         transparent
       />
-      <planeGeometry args={[1.6, 1.6]} />
+      <planeGeometry args={[1.5, 1.5]} />
     </mesh>
   );
 };
