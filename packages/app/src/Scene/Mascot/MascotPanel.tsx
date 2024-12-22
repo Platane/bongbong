@@ -25,8 +25,8 @@ export const MascotPanel = ({
     <Camera />
 
     <group>
-      <ambientLight intensity={1} />
-      <directionalLight position={[1, 4, 2]} intensity={4} />
+      <ambientLight intensity={3} />
+      <pointLight position={[1, 3, 3]} intensity={24} />
     </group>
 
     <Terry

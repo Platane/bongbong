@@ -10,7 +10,7 @@ export const Body = () => {
 
   const { scene } = useThree();
 
-  const texture = React.useMemo(() => createTexture("blue", "red"), []);
+  const texture = React.useMemo(() => createTexture("#23307c", "#c22802"), []);
 
   React.useEffect(() => {
     const mesh = ref.current;
@@ -32,7 +32,6 @@ export const Body = () => {
   return (
     <skinnedMesh geometry={drumGeometry} ref={ref}>
       <meshToonMaterial map={texture} gradientMap={gradientMap} />
-      {/* <meshStandardMaterial map={texture} /> */}
       {/* <meshNormalMaterial /> */}
     </skinnedMesh>
   );
@@ -157,7 +156,7 @@ export const createDrumGeometry = ({
 
       a0x * radius,
       -h,
-      a0y * radius,
+      a0y * radius
     );
     normals.push(
       0,
@@ -170,7 +169,7 @@ export const createDrumGeometry = ({
 
       0,
       -1,
-      0,
+      0
     );
     uvs.push(1, 1, 1, 1, 1, 1);
 
@@ -189,7 +188,7 @@ export const createDrumGeometry = ({
 
       a1x * radiusFace,
       h,
-      a1y * radiusFace,
+      a1y * radiusFace
     );
     normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
     uvs.push(1 / 4, 1 / 4, 1 / 4, 1 / 4, 1 / 4, 1 / 4);
@@ -206,7 +205,7 @@ export const createDrumGeometry = ({
 
       a1x * radiusFace,
       h,
-      a1y * radiusFace,
+      a1y * radiusFace
     );
     positions.push(
       //
@@ -220,7 +219,7 @@ export const createDrumGeometry = ({
 
       a1x * radius,
       h,
-      a1y * radius,
+      a1y * radius
     );
     normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
     normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
@@ -238,21 +237,21 @@ export const createDrumGeometry = ({
       positions.push(
         positions[k * 9 + 0] * A,
         positions[k * 9 + 1] * H,
-        positions[k * 9 + 2] * A,
+        positions[k * 9 + 2] * A
       );
       normals.push(normals[k * 9 + 0], normals[k * 9 + 1], normals[k * 9 + 2]);
 
       positions.push(
         positions[k * 9 + 6] * A,
         positions[k * 9 + 7] * H,
-        positions[k * 9 + 8] * A,
+        positions[k * 9 + 8] * A
       );
       normals.push(normals[k * 9 + 6], normals[k * 9 + 7], normals[k * 9 + 8]);
 
       positions.push(
         positions[k * 9 + 3] * A,
         positions[k * 9 + 4] * H,
-        positions[k * 9 + 5] * A,
+        positions[k * 9 + 5] * A
       );
       normals.push(normals[k * 9 + 3], normals[k * 9 + 4], normals[k * 9 + 5]);
 
@@ -286,7 +285,7 @@ export const createDrumGeometry = ({
 
           a0x * r,
           -h,
-          a0y * r,
+          a0y * r
         );
         normals.push(
           0,
@@ -299,7 +298,7 @@ export const createDrumGeometry = ({
 
           0,
           -1,
-          0,
+          0
         );
         uvs.push(2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4);
 
@@ -315,7 +314,7 @@ export const createDrumGeometry = ({
 
           a1x * r,
           -h,
-          a1y * r,
+          a1y * r
         );
         normals.push(
           0,
@@ -328,7 +327,7 @@ export const createDrumGeometry = ({
 
           0,
           1,
-          0,
+          0
         );
         uvs.push(2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4);
         positions.push(
@@ -343,7 +342,7 @@ export const createDrumGeometry = ({
 
           a0x * r,
           h,
-          a0y * r,
+          a0y * r
         );
         normals.push(
           0,
@@ -356,7 +355,7 @@ export const createDrumGeometry = ({
 
           0,
           -1,
-          0,
+          0
         );
         uvs.push(2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4);
 
@@ -372,7 +371,7 @@ export const createDrumGeometry = ({
 
           a1x * r,
           h,
-          a1y * r,
+          a1y * r
         );
         normals.push(
           0,
@@ -385,7 +384,7 @@ export const createDrumGeometry = ({
 
           0,
           1,
-          0,
+          0
         );
         uvs.push(2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4, 2 / 4);
       }
@@ -403,7 +402,7 @@ export const createDrumGeometry = ({
         r2 + rm,
         m,
         radialSegments,
-        1,
+        1
       ).toNonIndexed();
       const mat = new THREE.Matrix4();
       mat.makeTranslation(new THREE.Vector3(0, -h, 0));
@@ -422,7 +421,7 @@ export const createDrumGeometry = ({
         r1 + rm,
         m,
         radialSegments,
-        1,
+        1
       ).toNonIndexed();
       const mat = new THREE.Matrix4();
       mat.makeTranslation(new THREE.Vector3(0, h, 0));
@@ -441,7 +440,7 @@ export const createDrumGeometry = ({
         radius + rm + 0.04,
         m,
         radialSegments,
-        1,
+        1
       ).toNonIndexed();
       const mat = new THREE.Matrix4();
       mat.makeTranslation(new THREE.Vector3(0, (height - m) * 0.5 - 0.01, 0));
@@ -459,11 +458,11 @@ export const createDrumGeometry = ({
         radius + rm + 0.04,
         m,
         radialSegments,
-        1,
+        1
       ).toNonIndexed();
       const mat = new THREE.Matrix4();
       mat.makeTranslation(
-        new THREE.Vector3(0, -((height - m) * 0.5 - 0.01), 0),
+        new THREE.Vector3(0, -((height - m) * 0.5 - 0.01), 0)
       );
       cylinderGeometry.applyMatrix4(mat);
 
@@ -477,15 +476,15 @@ export const createDrumGeometry = ({
 
   geometry.setAttribute(
     "position",
-    new THREE.BufferAttribute(new Float32Array(positions), 3),
+    new THREE.BufferAttribute(new Float32Array(positions), 3)
   );
   geometry.setAttribute(
     "normal",
-    new THREE.BufferAttribute(new Float32Array(normals), 3),
+    new THREE.BufferAttribute(new Float32Array(normals), 3)
   );
   geometry.setAttribute(
     "uv",
-    new THREE.BufferAttribute(new Float32Array(uvs), 2),
+    new THREE.BufferAttribute(new Float32Array(uvs), 2)
   );
 
   // geometry.computeVertexNormals();
