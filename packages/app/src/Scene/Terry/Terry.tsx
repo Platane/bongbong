@@ -20,8 +20,7 @@ export const Terry = ({
 
     ref.current.userData.t = (ref.current.userData.t ?? 0) + delta;
 
-    ref.current.rotation.y =
-      Math.sin(ref.current.userData.t * 1.4) * 1.5 - 1.35;
+    ref.current.rotation.y = Math.sin(ref.current.userData.t * 1.4) * 1.2 + 0.8;
   });
 
   const [B, setB] = React.useState(() => new THREE.Vector3(3, 0, -1));
@@ -72,12 +71,12 @@ export const Terry = ({
       </group>
 
       <mesh position={[0.4, -1, -0.4]}>
-        <cylinderGeometry args={[0.18, 0.18, 1.5]} />
-        <meshNormalMaterial />
+        <cylinderGeometry args={[0.08, 0.08, 1.5]} />
+        <meshStandardMaterial color="#000" />
       </mesh>
       <mesh position={[-0.4, -1, -0.4]}>
-        <cylinderGeometry args={[0.18, 0.18, 1.5]} />
-        <meshNormalMaterial />
+        <cylinderGeometry args={[0.08, 0.08, 1.5]} />
+        <meshStandardMaterial color="#000" />
       </mesh>
     </group>
   );

@@ -48,8 +48,8 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
     //   roughness: 10,
     //   metalness: 0,
     // });
-    const material = new THREE.MeshNormalMaterial();
-    // const material = new THREE.MeshBasicMaterial({ color: "#333" });
+    // const material = new THREE.MeshNormalMaterial();
+    const material = new THREE.MeshBasicMaterial({ color: "#000" });
 
     const debugSpheres = Array.from(
       { length: particleCount },
@@ -68,7 +68,7 @@ const Arm_ = ({ particleCount, restingLength, ...props }: Props) => {
       step,
     } = createWorld({ particleCount, restingLength }, { A, B });
 
-    const tubeParams = { radius: 0.17, radialSegments: 8 };
+    const tubeParams = { radius: 0.08, radialSegments: 8 };
     const tube = new THREE.Mesh(
       createTubeGeometry(particleCount, tubeParams),
       material,

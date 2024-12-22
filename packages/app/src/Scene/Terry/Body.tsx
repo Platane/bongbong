@@ -31,8 +31,8 @@ export const Body = () => {
 
   return (
     <skinnedMesh geometry={drumGeometry} ref={ref}>
-      {/* <meshToonMaterial map={texture} /> */}
-      <meshStandardMaterial map={texture} />
+      <meshToonMaterial map={texture} gradientMap={gradientMap} />
+      {/* <meshStandardMaterial map={texture} /> */}
       {/* <meshNormalMaterial /> */}
     </skinnedMesh>
   );
@@ -488,10 +488,42 @@ export const createDrumGeometry = ({
     new THREE.BufferAttribute(new Float32Array(uvs), 2),
   );
 
-  geometry.computeVertexNormals();
+  // geometry.computeVertexNormals();
 
   return geometry;
 };
+
+const createGradientTexture = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 10;
+  canvas.height = 1;
+
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, 999, 1);
+
+  ctx.fillStyle = "#444";
+  ctx.fillRect(0, 0, 7, 1);
+
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, 5, 1);
+
+  canvas.style.position = "fixed";
+  canvas.style.bottom = "0";
+  canvas.style.width = "min( 500px , 90vw )";
+  canvas.style.imageRendering = "pixelated";
+
+  // document.body.appendChild(canvas);
+
+  const texture = new THREE.CanvasTexture(canvas);
+
+  texture.minFilter = THREE.NearestFilter;
+  texture.magFilter = THREE.NearestFilter;
+
+  return texture;
+};
+const gradientMap = createGradientTexture();
 
 const drumGeometry = createDrumGeometry();
 computeGeometryWeight(drumGeometry, createDrumBones().bones);
